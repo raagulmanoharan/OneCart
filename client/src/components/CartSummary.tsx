@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
-import { Zap, AlertCircle, ChevronDown, ChevronUp, Truck, MapPin } from "lucide-react";
+import { Zap, AlertCircle, ChevronDown, ChevronUp, Truck, MapPin, Settings } from "lucide-react";
 import type { Product, Rule } from "@shared/schema";
 
 export default function CartSummary() {
@@ -229,15 +229,40 @@ export default function CartSummary() {
 
         {/* Active Rules Display */}
         <div className="mt-6 pt-6 border-t border-gray-200">
-          <h4 className="text-sm font-medium text-gray-900 mb-3">Active Rules</h4>
+          <div className="flex items-center justify-between mb-3">
+            <h4 className="text-sm font-medium text-gray-900">Active Rules</h4>
+            <Button 
+              variant="outline" 
+              size="sm"
+              onClick={() => {
+                const event = new CustomEvent('openRuleBuilder');
+                window.dispatchEvent(event);
+              }}
+            >
+              Add New Rule
+            </Button>
+          </div>
           
           {activeRules.length > 0 ? (
             <div className="space-y-2">
               {activeRules.map((rule: Rule) => (
                 <div key={rule.id} className="bg-green-50 border border-green-200 rounded-lg p-3">
-                  <div className="flex items-center">
-                    <Zap className="h-4 w-4 text-green-600 mr-2" />
-                    <span className="text-sm text-green-800 font-medium">{rule.name}</span>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      <Zap className="h-4 w-4 text-green-600 mr-2" />
+                      <span className="text-sm text-green-800 font-medium">{rule.name}</span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        const event = new CustomEvent('editRule', { detail: rule });
+                        window.dispatchEvent(event);
+                      }}
+                      className="h-6 w-6 p-0 text-green-600 hover:text-green-800 hover:bg-green-100"
+                    >
+                      <Settings className="h-3 w-3" />
+                    </Button>
                   </div>
                   <div className="mt-1">
                     <Badge variant="outline" className="text-xs">

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -86,6 +86,28 @@ export default function CartDisplay() {
       });
     },
   });
+
+  // Listen for rule builder events from CartSummary
+  useEffect(() => {
+    const handleOpenRuleBuilder = () => {
+      setEditingRule(null);
+      setIsRuleModalOpen(true);
+    };
+
+    const handleEditRule = (event: CustomEvent) => {
+      const rule = event.detail;
+      setEditingRule(rule);
+      setIsRuleModalOpen(true);
+    };
+
+    window.addEventListener('openRuleBuilder', handleOpenRuleBuilder);
+    window.addEventListener('editRule', handleEditRule as EventListener);
+
+    return () => {
+      window.removeEventListener('openRuleBuilder', handleOpenRuleBuilder);
+      window.removeEventListener('editRule', handleEditRule as EventListener);
+    };
+  }, []);
 
   const handleQuantityChange = (product: Product, newQuantity: number) => {
     if (newQuantity < 1) return;

@@ -59,10 +59,11 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
     enabled: !!editingRule?.id,
   });
 
-  // Reset form when modal opens/closes or when editingRule changes
+  // Reset form when modal opens or when editingRule changes
   useEffect(() => {
+    if (!isOpen) return;
+    
     if (editingRule) {
-      // Populate form with existing rule data
       setFormData({
         name: editingRule.name,
         trigger: editingRule.trigger,
@@ -72,7 +73,6 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
         selectedProducts: ruleProducts.map((rp: any) => rp.productId) || [],
       });
     } else {
-      // Reset form for new rule
       setFormData({
         name: "",
         trigger: "",
@@ -82,7 +82,7 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
         selectedProducts: [],
       });
     }
-  }, [editingRule, ruleProducts, isOpen]);
+  }, [editingRule?.id, isOpen]); // Removed ruleProducts dependency to prevent loop
 
   const saveRuleMutation = useMutation({
     mutationFn: async (ruleData: any) => {
