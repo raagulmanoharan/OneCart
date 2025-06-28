@@ -135,8 +135,7 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
 
   const deleteRuleMutation = useMutation({
     mutationFn: async (ruleId: number) => {
-      const response = await apiRequest("DELETE", `/api/rules/${ruleId}`);
-      return await response.json();
+      await apiRequest("DELETE", `/api/rules/${ruleId}`);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rules"] });
