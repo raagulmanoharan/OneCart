@@ -217,6 +217,14 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
     }));
   };
 
+  const handleSelectAll = () => {
+    const allSelected = formData.selectedProducts.length === products.length;
+    setFormData(prev => ({
+      ...prev,
+      selectedProducts: allSelected ? [] : products.map(p => p.id)
+    }));
+  };
+
   const triggerOptions = [
     { value: "price_drop", label: "Price drops" },
     { value: "availability", label: "Item comes in stock" },
@@ -374,7 +382,20 @@ export default function RuleBuilderModal({ isOpen, onClose, products, editingRul
 
           {/* Apply to Products */}
           <div>
-            <Label>Apply to Products *</Label>
+            <div className="flex items-center justify-between">
+              <Label>Apply to Products *</Label>
+              {products.length > 0 && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={handleSelectAll}
+                  className="text-xs h-7"
+                >
+                  {formData.selectedProducts.length === products.length ? "Deselect All" : "Select All"}
+                </Button>
+              )}
+            </div>
             {products.length > 0 ? (
               <div className="mt-2 space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3">
                 {products.map((product) => (
