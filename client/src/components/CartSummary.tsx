@@ -268,7 +268,7 @@ export default function CartSummary() {
                   window.dispatchEvent(event);
                 }}
               >
-                Create your first rule
+                {rules.length > 0 ? "Edit Rules" : "Create your first rule"}
               </Button>
             </div>
           )}

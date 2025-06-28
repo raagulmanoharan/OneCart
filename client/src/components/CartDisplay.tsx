@@ -10,15 +10,20 @@ import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
 import RuleBuilderModal from "./RuleBuilderModal";
-import type { Product } from "@shared/schema";
+import type { Product, Rule } from "@shared/schema";
 
 export default function CartDisplay() {
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const { data: products = [], isLoading } = useQuery({
+  const { data: products = [], isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products"],
+    retry: false,
+  });
+
+  const { data: rules = [] } = useQuery<Rule[]>({
+    queryKey: ["/api/rules"],
     retry: false,
   });
 
@@ -264,12 +269,13 @@ export default function CartDisplay() {
             <div className="p-6">
               <div className="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
                 <Button 
-                  onClick={handleBuyNow}
-                  className="flex-1"
+                  disabled
+                  className="flex-1 opacity-50 cursor-not-allowed"
                   size="lg"
+                  title="Coming soon feature"
                 >
                   <ShoppingCart className="mr-2 h-4 w-4" />
-                  Buy Now
+                  Buy Now (Coming Soon)
                 </Button>
                 <Button 
                   variant="outline"
@@ -278,7 +284,7 @@ export default function CartDisplay() {
                   size="lg"
                 >
                   <Settings className="mr-2 h-4 w-4" />
-                  Set Up Rules
+                  {rules.length > 0 ? "Edit Rules" : "Set Up Rules"}
                 </Button>
               </div>
             </div>
