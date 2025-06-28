@@ -32,13 +32,45 @@ export class ProductExtractor {
 
   private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
-  // Approximate USD to INR conversion rate (should be updated regularly)
-  private static USD_TO_INR_RATE = 83.0;
+  // Cache for exchange rate to avoid excessive API calls
+  private static exchangeRateCache: { rate: number; timestamp: number } | null = null;
+  private static CACHE_DURATION = 3600000; // 1 hour in milliseconds
 
-  private static convertUsdToInr(usdPrice: string): string {
+  private static async getCurrentExchangeRate(): Promise<number> {
+    const now = Date.now();
+    
+    // Return cached rate if it's still valid
+    if (this.exchangeRateCache && (now - this.exchangeRateCache.timestamp) < this.CACHE_DURATION) {
+      return this.exchangeRateCache.rate;
+    }
+
+    try {
+      // Using exchangerate-api.com (free tier allows 1500 requests/month)
+      const response = await fetch('https://api.exchangerate-api.com/v4/latest/USD');
+      const data = await response.json();
+      
+      if (data.rates && data.rates.INR) {
+        const rate = data.rates.INR;
+        this.exchangeRateCache = { rate, timestamp: now };
+        console.log(`Updated USD to INR exchange rate: ${rate}`);
+        return rate;
+      }
+    } catch (error) {
+      console.error('Failed to fetch exchange rate:', error);
+    }
+
+    // Fallback to a reasonable default if API fails
+    const fallbackRate = 83.0;
+    console.log(`Using fallback USD to INR rate: ${fallbackRate}`);
+    return fallbackRate;
+  }
+
+  private static async convertUsdToInr(usdPrice: string): Promise<string> {
     const numericPrice = parseFloat(usdPrice.replace(/[^\d.]/g, ''));
     if (isNaN(numericPrice)) return usdPrice.replace(/[^\d.]/g, '');
-    const inrPrice = numericPrice * this.USD_TO_INR_RATE;
+    
+    const exchangeRate = await this.getCurrentExchangeRate();
+    const inrPrice = numericPrice * exchangeRate;
     return inrPrice.toFixed(2);
   }
 
@@ -135,9 +167,9 @@ export class ProductExtractor {
       let result: ExtractionResult;
       
       if (domain.includes('amazon.in') || domain.includes('amazon.com')) {
-        result = this.extractFromAmazon($, domain);
+        result = await this.extractFromAmazon($, domain);
       } else if (domain.includes('ebay.com')) {
-        result = this.extractFromEbay($, domain);
+        result = await this.extractFromEbay($, domain);
       } else if (domain.includes('flipkart.com')) {
         result = this.extractFromFlipkart($, domain);
       } else if (domain.includes('myntra.com')) {
@@ -175,7 +207,7 @@ export class ProductExtractor {
     }
   }
 
-  private static extractFromAmazon($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+  private static async extractFromAmazon($: cheerio.CheerioAPI, domain: string): Promise<ExtractionResult> {
     try {
       const title = $('#productTitle').text().trim() || 
                    $('h1.a-size-large').text().trim() ||
@@ -214,10 +246,10 @@ export class ProductExtractor {
       // Convert USD to INR for Amazon US, return only numeric values
       let processedPrice = price.replace(/[^\d.,]/g, '');
       if (isAmazonUS && price.includes('$')) {
-        processedPrice = this.convertUsdToInr(price);
+        processedPrice = await this.convertUsdToInr(price);
       } else if (isAmazonUS && (!price.includes('₹') && !price.includes('$'))) {
         // If no currency symbol on Amazon US, assume USD
-        processedPrice = this.convertUsdToInr(price);
+        processedPrice = await this.convertUsdToInr(price);
       }
 
       return {
@@ -692,7 +724,7 @@ export class ProductExtractor {
     }
   }
 
-  private static extractFromEbay($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+  private static async extractFromEbay($: cheerio.CheerioAPI, domain: string): Promise<ExtractionResult> {
     try {
       // Updated selectors for eBay's current structure
       const title = $('h1[data-testid="x-item-title-label"]').text().trim() ||
@@ -743,7 +775,7 @@ export class ProductExtractor {
       // Convert USD to INR for eBay (assumes USD pricing), return only numeric values
       let processedPrice = price.replace(/[^\d.,]/g, '');
       if (price.includes('$') || !price.includes('₹')) {
-        processedPrice = this.convertUsdToInr(price);
+        processedPrice = await this.convertUsdToInr(price);
       }
 
       return {
