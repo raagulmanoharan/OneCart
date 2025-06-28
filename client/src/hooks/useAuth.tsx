@@ -1,4 +1,4 @@
-import React, { createContext, ReactNode, useContext } from "react";
+import { createContext, ReactNode, useContext } from "react";
 import {
   useQuery,
   useMutation,
@@ -20,7 +20,7 @@ type AuthContextType = {
 
 export const AuthContext = createContext<AuthContextType | null>(null);
 
-export function AuthProvider({ children }: { children: ReactNode }): React.ReactElement {
+export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
   
   const {

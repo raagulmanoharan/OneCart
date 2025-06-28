@@ -106,6 +106,12 @@ export class DatabaseStorage implements IStorage {
   }
 
   async deleteProduct(id: number, userId: number): Promise<void> {
+    // First remove the product from any rules
+    await db
+      .delete(ruleProducts)
+      .where(eq(ruleProducts.productId, id));
+    
+    // Then delete the product
     await db
       .delete(products)
       .where(and(eq(products.id, id), eq(products.userId, userId)));
