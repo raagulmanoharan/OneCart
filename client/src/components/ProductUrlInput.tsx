@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, AlertCircle, CheckCircle } from "lucide-react";
+import { Loader2, AlertCircle, CheckCircle, Plus } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
@@ -47,15 +47,11 @@ export default function ProductUrlInput() {
         return;
       }
       
-      // Show manual entry option for blocked sites
-      if (error.message && error.message.includes("anti-bot protection")) {
-        setShowManualEntry(true);
-        // Try to extract domain from URL for the manual entry
-        try {
-          const domain = new URL(url).hostname.replace('www.', '');
-          setManualProduct(prev => ({ ...prev, storeDomain: domain }));
-        } catch {}
-      }
+      // Pre-populate store domain for manual entry if needed
+      try {
+        const domain = new URL(url).hostname.replace('www.', '');
+        setManualProduct(prev => ({ ...prev, storeDomain: domain }));
+      } catch {}
       
       toast({
         title: "Extraction failed",
@@ -209,25 +205,35 @@ export default function ProductUrlInput() {
             </Alert>
           )}
 
-          {/* Error State */}
-          {extractMutation.isError && (
+          {/* Error State with Manual Entry Option */}
+          {extractMutation.isError && !showManualEntry && (
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
-                {extractMutation.error.message || "Unable to extract product information. Please check the URL and try again."}
+                <div className="flex items-center justify-between">
+                  <span>Unable to extract product details automatically</span>
+                  <Button 
+                    variant="outline" 
+                    size="sm"
+                    onClick={() => setShowManualEntry(true)}
+                    className="ml-4"
+                  >
+                    Add Manually
+                  </Button>
+                </div>
               </AlertDescription>
             </Alert>
           )}
 
           {/* Manual Entry Form */}
           {showManualEntry && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
+            <Alert className="border-blue-200 bg-blue-50">
+              <Plus className="h-4 w-4 text-blue-600" />
               <AlertDescription>
                 <div className="mt-2">
-                  <h4 className="text-sm font-medium text-gray-900 mb-3">Manual Product Entry</h4>
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Add Product Manually</h4>
                   <p className="text-xs text-gray-600 mb-3">
-                    Since automatic extraction was blocked, please enter the product details manually:
+                    Enter the product details from the original page:
                   </p>
                   <div className="space-y-3">
                     <div>
