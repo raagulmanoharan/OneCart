@@ -106,6 +106,8 @@ OneCart is a universal shopping cart application that aggregates products from m
 - June 28, 2025: Initial setup with full-stack application
 - June 28, 2025: Enhanced shipping estimation with expandable section showing earliest/latest delivery dates and location-based calculations
 - June 28, 2025: Implemented anti-bot protection handling with multiple request strategies and manual entry fallback for blocked sites
+- June 28, 2025: Added Amazon.com and eBay.com support with USD to INR currency conversion (rate: 83.0)
+- June 28, 2025: Enhanced store naming - Amazon.com displays as "Amazon US", Amazon.in as "Amazon India"
 
 ## User Preferences
 

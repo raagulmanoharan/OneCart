@@ -32,6 +32,16 @@ export class ProductExtractor {
 
   private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
+  // Approximate USD to INR conversion rate (should be updated regularly)
+  private static USD_TO_INR_RATE = 83.0;
+
+  private static convertUsdToInr(usdPrice: string): string {
+    const numericPrice = parseFloat(usdPrice.replace(/[^\d.]/g, ''));
+    if (isNaN(numericPrice)) return usdPrice;
+    const inrPrice = numericPrice * this.USD_TO_INR_RATE;
+    return `₹${inrPrice.toFixed(2)}`;
+  }
+
   static async extractFromUrl(url: string): Promise<ExtractionResult> {
     try {
       // Validate URL
@@ -197,13 +207,26 @@ export class ProductExtractor {
         };
       }
 
+      // Determine store name and handle currency conversion
+      const isAmazonUS = domain === 'amazon.com';
+      const storeName = isAmazonUS ? 'Amazon US' : 'Amazon India';
+      
+      // Convert USD to INR for Amazon US
+      let processedPrice = price.replace(/[^\d.,]/g, '');
+      if (isAmazonUS && price.includes('$')) {
+        processedPrice = this.convertUsdToInr(price);
+      } else if (!price.includes('₹') && !price.includes('$')) {
+        // If no currency symbol, assume INR for amazon.in and USD for amazon.com
+        processedPrice = isAmazonUS ? this.convertUsdToInr(price) : `₹${processedPrice}`;
+      }
+
       return {
         success: true,
         product: {
           title,
-          price: price.replace(/[^\d.,]/g, ''),
+          price: processedPrice,
           imageUrl,
-          storeDomain: domain,
+          storeDomain: storeName,
           color,
           size,
           availability
@@ -717,13 +740,19 @@ export class ProductExtractor {
         };
       }
 
+      // Convert USD to INR for eBay (assumes USD pricing)
+      let processedPrice = price.replace(/[^\d.,]/g, '');
+      if (price.includes('$') || !price.includes('₹')) {
+        processedPrice = this.convertUsdToInr(price);
+      }
+
       return {
         success: true,
         product: {
           title,
-          price: price.replace(/[^\d.,]/g, ''),
+          price: processedPrice,
           imageUrl,
-          storeDomain: domain,
+          storeDomain: 'eBay',
           availability
         }
       };
