@@ -37,9 +37,9 @@ export class ProductExtractor {
 
   private static convertUsdToInr(usdPrice: string): string {
     const numericPrice = parseFloat(usdPrice.replace(/[^\d.]/g, ''));
-    if (isNaN(numericPrice)) return usdPrice;
+    if (isNaN(numericPrice)) return usdPrice.replace(/[^\d.]/g, '');
     const inrPrice = numericPrice * this.USD_TO_INR_RATE;
-    return `₹${inrPrice.toFixed(2)}`;
+    return inrPrice.toFixed(2);
   }
 
   static async extractFromUrl(url: string): Promise<ExtractionResult> {
@@ -211,13 +211,13 @@ export class ProductExtractor {
       const isAmazonUS = domain === 'amazon.com';
       const storeName = isAmazonUS ? 'Amazon US' : 'Amazon India';
       
-      // Convert USD to INR for Amazon US
+      // Convert USD to INR for Amazon US, return only numeric values
       let processedPrice = price.replace(/[^\d.,]/g, '');
       if (isAmazonUS && price.includes('$')) {
         processedPrice = this.convertUsdToInr(price);
-      } else if (!price.includes('₹') && !price.includes('$')) {
-        // If no currency symbol, assume INR for amazon.in and USD for amazon.com
-        processedPrice = isAmazonUS ? this.convertUsdToInr(price) : `₹${processedPrice}`;
+      } else if (isAmazonUS && (!price.includes('₹') && !price.includes('$'))) {
+        // If no currency symbol on Amazon US, assume USD
+        processedPrice = this.convertUsdToInr(price);
       }
 
       return {
@@ -740,7 +740,7 @@ export class ProductExtractor {
         };
       }
 
-      // Convert USD to INR for eBay (assumes USD pricing)
+      // Convert USD to INR for eBay (assumes USD pricing), return only numeric values
       let processedPrice = price.replace(/[^\d.,]/g, '');
       if (price.includes('$') || !price.includes('₹')) {
         processedPrice = this.convertUsdToInr(price);
