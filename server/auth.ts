@@ -44,7 +44,7 @@ export function setupAuth(app: Express) {
     store: new PostgresSessionStore({ 
       conString: process.env.DATABASE_URL,
       createTableIfMissing: true,
-      tableName: 'session'
+      tableName: 'sessions'
     }),
     cookie: {
       httpOnly: true,
