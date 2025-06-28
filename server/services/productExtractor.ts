@@ -19,13 +19,15 @@ export interface ExtractionResult {
 export class ProductExtractor {
   private static SUPPORTED_DOMAINS = [
     'amazon.in',
+    'amazon.com',
     'flipkart.com',
     'myntra.com',
     'nykaa.com',
     'ajio.com',
     'meesho.com',
     'shopclues.com',
-    'snapdeal.com'
+    'snapdeal.com',
+    'ebay.com'
   ];
 
   private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -122,8 +124,10 @@ export class ProductExtractor {
       // Extract based on domain
       let result: ExtractionResult;
       
-      if (domain.includes('amazon.in')) {
+      if (domain.includes('amazon.in') || domain.includes('amazon.com')) {
         result = this.extractFromAmazon($, domain);
+      } else if (domain.includes('ebay.com')) {
+        result = this.extractFromEbay($, domain);
       } else if (domain.includes('flipkart.com')) {
         result = this.extractFromFlipkart($, domain);
       } else if (domain.includes('myntra.com')) {
@@ -661,6 +665,72 @@ export class ProductExtractor {
       return {
         success: false,
         error: `Snapdeal extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private static extractFromEbay($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+    try {
+      // Updated selectors for eBay's current structure
+      const title = $('h1[data-testid="x-item-title-label"]').text().trim() ||
+                   $('.x-item-title-label').text().trim() ||
+                   $('#iti-title').text().trim() ||
+                   $('h1[class*="notranslate"]').text().trim() ||
+                   $('h1').first().text().trim();
+
+      const price = $('[data-testid="notranslate"]').first().text().trim() ||
+                   $('.display-price').text().trim() ||
+                   $('[class*="price"]').first().text().trim() ||
+                   $('.u-flL.condText').text().trim() ||
+                   $('#prcIsum').text().trim();
+
+      const imageUrl = $('#icImg').attr('src') ||
+                      $('[data-testid="ux-image-carousel-item"] img').first().attr('src') ||
+                      $('.ux-image-carousel-item img').first().attr('src') ||
+                      $('img[alt*="Picture"]').first().attr('src') ||
+                      $('img').first().attr('src');
+
+      // Extract additional information
+      const availability = $('[data-testid="u-bold"]').text().trim() ||
+                          $('.u-flL.condText').text().trim() ||
+                          $('[class*="available"]').text().trim();
+
+      if (!title || !price) {
+        console.log('eBay extraction debug:', {
+          titleSelectors: {
+            'h1[data-testid="x-item-title-label"]': $('h1[data-testid="x-item-title-label"]').length,
+            '.x-item-title-label': $('.x-item-title-label').length,
+            '#iti-title': $('#iti-title').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '[data-testid="notranslate"]': $('[data-testid="notranslate"]').length,
+            '.display-price': $('.display-price').length,
+            '[class*="price"]': $('[class*="price"]').length,
+            '#prcIsum': $('#prcIsum').length
+          }
+        });
+        
+        return {
+          success: false,
+          error: 'Could not extract required product information from eBay page. The page structure may have changed.'
+        };
+      }
+
+      return {
+        success: true,
+        product: {
+          title,
+          price: price.replace(/[^\d.,]/g, ''),
+          imageUrl,
+          storeDomain: domain,
+          availability
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `eBay extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }

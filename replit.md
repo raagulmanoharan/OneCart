@@ -36,7 +36,7 @@ OneCart is a universal shopping cart application that aggregates products from m
 - **User Management**: Automatic user creation and profile synchronization
 
 ### Product Extraction Service
-- **Supported Platforms**: Amazon India, Flipkart, Myntra, Nykaa, Ajio, Meesho, Shopclues, Snapdeal
+- **Supported Platforms**: Amazon (India & US), eBay, Flipkart, Myntra, Nykaa, Ajio, Meesho, Shopclues, Snapdeal
 - **Technology**: Cheerio-based web scraping with platform-specific selectors
 - **Data Extraction**: Product title, price, images, availability, variants
 - **Error Handling**: Comprehensive validation and fallback mechanisms
