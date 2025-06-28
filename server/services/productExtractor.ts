@@ -22,7 +22,10 @@ export class ProductExtractor {
     'flipkart.com',
     'myntra.com',
     'nykaa.com',
-    'ajio.com'
+    'ajio.com',
+    'meesho.com',
+    'shopclues.com',
+    'snapdeal.com'
   ];
 
   private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
@@ -129,6 +132,12 @@ export class ProductExtractor {
         result = this.extractFromNykaa($, domain);
       } else if (domain.includes('ajio.com')) {
         result = this.extractFromAjio($, domain);
+      } else if (domain.includes('meesho.com')) {
+        result = this.extractFromMeesho($, domain);
+      } else if (domain.includes('shopclues.com')) {
+        result = this.extractFromShopclues($, domain);
+      } else if (domain.includes('snapdeal.com')) {
+        result = this.extractFromSnapdeal($, domain);
       } else {
         return {
           success: false,
@@ -473,6 +482,185 @@ export class ProductExtractor {
       return {
         success: false,
         error: `Ajio extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private static extractFromMeesho($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+    try {
+      // Updated selectors for Meesho's current structure
+      const title = $('h1[class*="product"]').text().trim() ||
+                   $('.product-title').text().trim() ||
+                   $('h1[class*="title"]').text().trim() ||
+                   $('h1').first().text().trim();
+
+      const price = $('span[class*="price"]').first().text().trim() ||
+                   $('.price').first().text().trim() ||
+                   $('div[class*="price"] span').first().text().trim() ||
+                   $('span[class*="rs"]').first().text().trim();
+
+      const imageUrl = $('img[class*="product"]').first().attr('src') ||
+                      $('.product-image img').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src') ||
+                      $('img').first().attr('src');
+
+      // Extract additional information
+      const availability = $('span[class*="stock"]').text().trim() ||
+                          $('div[class*="available"]').text().trim();
+
+      if (!title || !price) {
+        console.log('Meesho extraction debug:', {
+          titleSelectors: {
+            'h1[class*="product"]': $('h1[class*="product"]').length,
+            '.product-title': $('.product-title').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            'span[class*="price"]': $('span[class*="price"]').length,
+            '.price': $('.price').length
+          }
+        });
+        
+        return {
+          success: false,
+          error: 'Could not extract required product information from Meesho page. The page structure may have changed.'
+        };
+      }
+
+      return {
+        success: true,
+        product: {
+          title,
+          price: price.replace(/[^\d.,]/g, ''),
+          imageUrl,
+          storeDomain: domain,
+          availability
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Meesho extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private static extractFromShopclues($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+    try {
+      // Updated selectors for Shopclues's current structure
+      const title = $('h1.prd_name').text().trim() ||
+                   $('.product-title').text().trim() ||
+                   $('h1[class*="product"]').text().trim() ||
+                   $('h1').first().text().trim();
+
+      const price = $('.prd_price').text().trim() ||
+                   $('.price').first().text().trim() ||
+                   $('span[class*="price"]').first().text().trim() ||
+                   $('div[class*="price"] span').first().text().trim();
+
+      const imageUrl = $('.prd_img img').attr('src') ||
+                      $('.product-image img').first().attr('src') ||
+                      $('img[class*="product"]').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src');
+
+      // Extract additional information
+      const availability = $('span[class*="stock"]').text().trim() ||
+                          $('.availability').text().trim();
+
+      if (!title || !price) {
+        console.log('Shopclues extraction debug:', {
+          titleSelectors: {
+            'h1.prd_name': $('h1.prd_name').length,
+            '.product-title': $('.product-title').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '.prd_price': $('.prd_price').length,
+            '.price': $('.price').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
+        return {
+          success: false,
+          error: 'Could not extract required product information from Shopclues page. The page structure may have changed.'
+        };
+      }
+
+      return {
+        success: true,
+        product: {
+          title,
+          price: price.replace(/[^\d.,]/g, ''),
+          imageUrl,
+          storeDomain: domain,
+          availability
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Shopclues extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  private static extractFromSnapdeal($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+    try {
+      // Updated selectors for Snapdeal's current structure
+      const title = $('h1[itemprop="name"]').text().trim() ||
+                   $('.pdp-product-name').text().trim() ||
+                   $('h1[class*="product"]').text().trim() ||
+                   $('h1').first().text().trim();
+
+      const price = $('span[itemprop="price"]').text().trim() ||
+                   $('.payBlkBig').text().trim() ||
+                   $('.price').first().text().trim() ||
+                   $('span[class*="price"]').first().text().trim();
+
+      const imageUrl = $('img[itemprop="image"]').attr('src') ||
+                      $('.cloudzoom').attr('src') ||
+                      $('.product-image img').first().attr('src') ||
+                      $('img[class*="product"]').first().attr('src');
+
+      // Extract additional information
+      const availability = $('div[class*="stock"]').text().trim() ||
+                          $('.availability-status').text().trim();
+
+      if (!title || !price) {
+        console.log('Snapdeal extraction debug:', {
+          titleSelectors: {
+            'h1[itemprop="name"]': $('h1[itemprop="name"]').length,
+            '.pdp-product-name': $('.pdp-product-name').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            'span[itemprop="price"]': $('span[itemprop="price"]').length,
+            '.payBlkBig': $('.payBlkBig').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
+        return {
+          success: false,
+          error: 'Could not extract required product information from Snapdeal page. The page structure may have changed.'
+        };
+      }
+
+      return {
+        success: true,
+        product: {
+          title,
+          price: price.replace(/[^\d.,]/g, ''),
+          imageUrl,
+          storeDomain: domain,
+          availability
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Snapdeal extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
