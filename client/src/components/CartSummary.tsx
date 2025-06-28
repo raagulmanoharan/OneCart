@@ -116,9 +116,9 @@ export default function CartSummary() {
   }
 
   return (
-    <Card className="sticky top-8">
-      <CardContent className="p-6">
-        <h3 className="text-lg font-semibold text-gray-900 mb-4">Cart Summary</h3>
+    <Card className="sticky top-24 modern-card animate-in">
+      <CardContent className="p-8">
+        <h3 className="text-xl font-semibold text-gray-900 mb-6 tracking-tight">Cart Summary</h3>
         
         <div className="space-y-3">
           <div className="flex justify-between text-sm">

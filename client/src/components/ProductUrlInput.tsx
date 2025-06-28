@@ -160,28 +160,29 @@ export default function ProductUrlInput() {
   };
 
   return (
-    <Card className="mb-8">
-      <CardContent className="p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Add Product to Cart</h2>
+    <Card className="mb-8 modern-card animate-in">
+      <CardContent className="p-8">
+        <h2 className="text-2xl font-semibold text-gray-900 mb-6 tracking-tight">Add Product to Cart</h2>
         
         <div className="space-y-4">
           <div>
             <Label htmlFor="productUrl" className="block text-sm font-medium text-gray-700 mb-2">
               Product URL
             </Label>
-            <div className="flex space-x-2">
+            <div className="flex space-x-3">
               <Input
                 id="productUrl"
                 type="url"
-                placeholder="Paste product URL from Amazon, Flipkart, Myntra, Nykaa, or Ajio..."
+                placeholder="Paste product URL from Amazon US/India, eBay, Flipkart, Myntra, Nykaa, Ajio..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="flex-1"
+                className="flex-1 modern-input h-12 text-base px-4 rounded-xl border-gray-200/80 focus:border-primary/30 transition-all duration-200"
                 disabled={extractMutation.isPending}
               />
               <Button 
                 onClick={handleExtract}
                 disabled={extractMutation.isPending || !url.trim()}
+                className="h-12 px-8 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 transition-all duration-200"
               >
                 {extractMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />
@@ -190,8 +191,8 @@ export default function ProductUrlInput() {
                 )}
               </Button>
             </div>
-            <p className="text-xs text-gray-500 mt-1">
-              Supported sites: Amazon India, Flipkart, Myntra, Nykaa, Ajio
+            <p className="text-sm text-gray-500 mt-2 font-medium">
+              Supports Amazon US/India, eBay, Flipkart, Myntra, Nykaa, Ajio + more
             </p>
           </div>
 
