@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Package, Sparkles, ArrowRight, Globe, Zap } from "lucide-react";
 import { SiAmazon, SiEbay } from "react-icons/si";
+import { FlipkartLogo, MyntraLogo, NykaaLogo, AjioLogo, MeeshoLogo, SnapdealLogo } from "@/components/PlatformLogos";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -121,36 +122,28 @@ export default function Landing() {
               </div>
               <div className="text-center group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">F</span>
-                  </div>
+                  <FlipkartLogo className="h-10 w-10" />
                 </div>
                 <div className="text-lg font-medium text-slate-700">Flipkart</div>
                 <div className="text-xs text-slate-500 mt-1">India</div>
               </div>
               <div className="text-center group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">M</span>
-                  </div>
+                  <MyntraLogo className="h-10 w-10" />
                 </div>
                 <div className="text-lg font-medium text-slate-700">Myntra</div>
                 <div className="text-xs text-slate-500 mt-1">Fashion</div>
               </div>
               <div className="text-center group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <div className="w-8 h-8 bg-pink-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">N</span>
-                  </div>
+                  <NykaaLogo className="h-10 w-10" />
                 </div>
                 <div className="text-lg font-medium text-slate-700">Nykaa</div>
                 <div className="text-xs text-slate-500 mt-1">Beauty</div>
               </div>
               <div className="text-center group">
                 <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
-                    <span className="text-white font-bold text-sm">A</span>
-                  </div>
+                  <AjioLogo className="h-10 w-10" />
                 </div>
                 <div className="text-lg font-medium text-slate-700">Ajio</div>
                 <div className="text-xs text-slate-500 mt-1">Lifestyle</div>
@@ -168,17 +161,13 @@ export default function Landing() {
                 </div>
                 <div className="text-center group">
                   <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                    <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
-                      <span className="text-white font-bold text-xs">M</span>
-                    </div>
+                    <MeeshoLogo className="h-8 w-8" />
                   </div>
                   <div className="text-sm font-medium text-slate-600">Meesho</div>
                 </div>
                 <div className="text-center group">
                   <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                    <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center">
-                      <span className="text-white font-bold text-xs">S</span>
-                    </div>
+                    <SnapdealLogo className="h-8 w-8" />
                   </div>
                   <div className="text-sm font-medium text-slate-600">Snapdeal</div>
                 </div>
