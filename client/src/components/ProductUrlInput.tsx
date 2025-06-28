@@ -13,6 +13,12 @@ import { isUnauthorizedError } from "@/lib/authUtils";
 export default function ProductUrlInput() {
   const [url, setUrl] = useState("");
   const [extractedProduct, setExtractedProduct] = useState<any>(null);
+  const [showManualEntry, setShowManualEntry] = useState(false);
+  const [manualProduct, setManualProduct] = useState({
+    title: "",
+    price: "",
+    imageUrl: "",
+  });
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -40,6 +46,17 @@ export default function ProductUrlInput() {
         }, 500);
         return;
       }
+      
+      // Show manual entry option for blocked sites
+      if (error.message && error.message.includes("anti-bot protection")) {
+        setShowManualEntry(true);
+        // Try to extract domain from URL for the manual entry
+        try {
+          const domain = new URL(url).hostname.replace('www.', '');
+          setManualProduct(prev => ({ ...prev, storeDomain: domain }));
+        } catch {}
+      }
+      
       toast({
         title: "Extraction failed",
         description: error.message || "Could not extract product information",
@@ -55,8 +72,7 @@ export default function ProductUrlInput() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/products"] });
-      setExtractedProduct(null);
-      setUrl("");
+      resetForms();
       toast({
         title: "Product added to cart",
         description: "Your product has been successfully added",
@@ -108,6 +124,43 @@ export default function ProductUrlInput() {
       availability: extractedProduct.availability,
       quantity: 1,
     });
+  };
+
+  const handleManualAddToCart = () => {
+    if (!manualProduct.title || !manualProduct.price || !url) {
+      toast({
+        title: "Missing information",
+        description: "Please fill in the title and price",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    try {
+      const domain = new URL(url).hostname.replace('www.', '');
+      
+      addToCartMutation.mutate({
+        title: manualProduct.title,
+        price: manualProduct.price.replace(/[^\d.,]/g, ''),
+        originalUrl: url,
+        imageUrl: manualProduct.imageUrl,
+        storeDomain: domain,
+        quantity: 1,
+      });
+    } catch (error) {
+      toast({
+        title: "Invalid URL",
+        description: "Please provide a valid product URL",
+        variant: "destructive",
+      });
+    }
+  };
+
+  const resetForms = () => {
+    setUrl("");
+    setExtractedProduct(null);
+    setShowManualEntry(false);
+    setManualProduct({ title: "", price: "", imageUrl: "" });
   };
 
   return (
@@ -162,6 +215,74 @@ export default function ProductUrlInput() {
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>
                 {extractMutation.error.message || "Unable to extract product information. Please check the URL and try again."}
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {/* Manual Entry Form */}
+          {showManualEntry && (
+            <Alert>
+              <AlertCircle className="h-4 w-4" />
+              <AlertDescription>
+                <div className="mt-2">
+                  <h4 className="text-sm font-medium text-gray-900 mb-3">Manual Product Entry</h4>
+                  <p className="text-xs text-gray-600 mb-3">
+                    Since automatic extraction was blocked, please enter the product details manually:
+                  </p>
+                  <div className="space-y-3">
+                    <div>
+                      <Label htmlFor="manualTitle" className="text-xs">Product Title *</Label>
+                      <Input
+                        id="manualTitle"
+                        placeholder="Enter product title"
+                        value={manualProduct.title}
+                        onChange={(e) => setManualProduct(prev => ({ ...prev, title: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="manualPrice" className="text-xs">Price *</Label>
+                      <Input
+                        id="manualPrice"
+                        placeholder="e.g., 1999 or ₹1,999"
+                        value={manualProduct.price}
+                        onChange={(e) => setManualProduct(prev => ({ ...prev, price: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="manualImage" className="text-xs">Image URL (optional)</Label>
+                      <Input
+                        id="manualImage"
+                        placeholder="Paste image URL"
+                        value={manualProduct.imageUrl}
+                        onChange={(e) => setManualProduct(prev => ({ ...prev, imageUrl: e.target.value }))}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex space-x-2 pt-2">
+                      <Button 
+                        onClick={handleManualAddToCart}
+                        disabled={addToCartMutation.isPending || !manualProduct.title || !manualProduct.price}
+                        size="sm"
+                        className="flex-1"
+                      >
+                        {addToCartMutation.isPending ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "Add to Cart"
+                        )}
+                      </Button>
+                      <Button 
+                        variant="outline"
+                        onClick={() => setShowManualEntry(false)}
+                        size="sm"
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </div>
               </AlertDescription>
             </Alert>
           )}

@@ -105,6 +105,7 @@ OneCart is a universal shopping cart application that aggregates products from m
 ## Changelog
 - June 28, 2025: Initial setup with full-stack application
 - June 28, 2025: Enhanced shipping estimation with expandable section showing earliest/latest delivery dates and location-based calculations
+- June 28, 2025: Implemented anti-bot protection handling with multiple request strategies and manual entry fallback for blocked sites
 
 ## User Preferences
 
