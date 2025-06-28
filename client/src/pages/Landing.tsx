@@ -1,5 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { ShoppingCart, Package, Sparkles, ArrowRight, Globe, Zap } from "lucide-react";
+import { SiAmazon, SiEbay } from "react-icons/si";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -111,25 +112,76 @@ export default function Landing() {
           
           <div className="bg-white/30 backdrop-blur-xl rounded-3xl p-12 border border-white/20 shadow-lg">
             <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center">
-              <div className="text-center">
+              <div className="text-center group">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                  <SiAmazon className="h-8 w-8 text-orange-500" />
+                </div>
                 <div className="text-lg font-medium text-slate-700">Amazon</div>
                 <div className="text-xs text-slate-500 mt-1">India & US</div>
               </div>
-              <div className="text-center">
+              <div className="text-center group">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                  <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">F</span>
+                  </div>
+                </div>
                 <div className="text-lg font-medium text-slate-700">Flipkart</div>
                 <div className="text-xs text-slate-500 mt-1">India</div>
               </div>
-              <div className="text-center">
+              <div className="text-center group">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                  <div className="w-8 h-8 bg-pink-500 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">M</span>
+                  </div>
+                </div>
                 <div className="text-lg font-medium text-slate-700">Myntra</div>
                 <div className="text-xs text-slate-500 mt-1">Fashion</div>
               </div>
-              <div className="text-center">
+              <div className="text-center group">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                  <div className="w-8 h-8 bg-pink-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">N</span>
+                  </div>
+                </div>
                 <div className="text-lg font-medium text-slate-700">Nykaa</div>
                 <div className="text-xs text-slate-500 mt-1">Beauty</div>
               </div>
-              <div className="text-center">
+              <div className="text-center group">
+                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                  <div className="w-8 h-8 bg-purple-600 rounded-lg flex items-center justify-center">
+                    <span className="text-white font-bold text-sm">A</span>
+                  </div>
+                </div>
                 <div className="text-lg font-medium text-slate-700">Ajio</div>
                 <div className="text-xs text-slate-500 mt-1">Lifestyle</div>
+              </div>
+            </div>
+            
+            <div className="mt-8 pt-8 border-t border-slate-200/30">
+              <div className="text-center text-sm text-slate-500 mb-4">Additional Platforms</div>
+              <div className="flex justify-center items-center gap-6">
+                <div className="text-center group">
+                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                    <SiEbay className="h-6 w-6 text-blue-600" />
+                  </div>
+                  <div className="text-sm font-medium text-slate-600">eBay</div>
+                </div>
+                <div className="text-center group">
+                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                    <div className="w-6 h-6 bg-green-500 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">M</span>
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-slate-600">Meesho</div>
+                </div>
+                <div className="text-center group">
+                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
+                    <div className="w-6 h-6 bg-red-500 rounded flex items-center justify-center">
+                      <span className="text-white font-bold text-xs">S</span>
+                    </div>
+                  </div>
+                  <div className="text-sm font-medium text-slate-600">Snapdeal</div>
+                </div>
               </div>
             </div>
           </div>
