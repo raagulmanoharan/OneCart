@@ -4,7 +4,6 @@ import { useToast } from "@/hooks/use-toast";
 import ProductUrlInput from "@/components/ProductUrlInput";
 import CartDisplay from "@/components/CartDisplay";
 import CartSummary from "@/components/CartSummary";
-import logoImage from "@assets/1ccf05d9bdf2044841e6901d5e764961b9ab6397a13b48763e7eea2184c4794c_1751140386670.png";
 
 export default function Home() {
   const { toast } = useToast();
@@ -40,11 +39,7 @@ export default function Home() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <img 
-                src={logoImage} 
-                alt="OneCart" 
-                className="h-8 w-auto"
-              />
+              <h1 className="text-xl font-bold text-gray-900 tracking-tight">OneCart</h1>
             </div>
             <div className="flex items-center space-x-4">
               <button 
