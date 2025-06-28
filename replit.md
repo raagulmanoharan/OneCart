@@ -103,7 +103,8 @@ OneCart is a universal shopping cart application that aggregates products from m
 - **Port Configuration**: Dynamic port binding for cloud deployment
 
 ## Changelog
-- June 28, 2025. Initial setup
+- June 28, 2025: Initial setup with full-stack application
+- June 28, 2025: Enhanced shipping estimation with expandable section showing earliest/latest delivery dates and location-based calculations
 
 ## User Preferences
 
