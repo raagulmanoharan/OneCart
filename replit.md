@@ -110,6 +110,8 @@ OneCart is a universal shopping cart application that aggregates products from m
 - June 28, 2025: Enhanced store naming - Amazon.com displays as "Amazon US", Amazon.in as "Amazon India"
 - June 28, 2025: Implemented real-time currency conversion using exchangerate-api.com with 1-hour caching
 - June 28, 2025: Modernized UI with Inter font, minimal design, glass-morphism effects, and smooth animations
+- June 28, 2025: Implemented complete email-based authentication system replacing Replit Auth
+- June 28, 2025: Redesigned landing page with modern Swiss-style design, glassmorphism effects, and refined typography
 
 ## User Preferences
 
