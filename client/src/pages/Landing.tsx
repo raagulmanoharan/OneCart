@@ -99,28 +99,7 @@ export default function Landing() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-24 w-full max-w-6xl" id="features">
           
           
-          <div className="bg-white/40 backdrop-blur-xl rounded-3xl p-12 border border-white/20 shadow-lg">
-            <Zap className="h-8 w-8 text-slate-700 mb-6" />
-            <h3 className="text-2xl font-medium text-slate-900 mb-4">Smart Automation</h3>
-            <p className="text-slate-600 leading-relaxed mb-6">
-              Create intelligent rules for automated purchasing. Set price targets, availability alerts, 
-              and custom conditions for seamless shopping.
-            </p>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                <span className="text-sm text-slate-600">Price drop notifications</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                <span className="text-sm text-slate-600">Stock availability alerts</span>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-2 h-2 bg-slate-400 rounded-full"></div>
-                <span className="text-sm text-slate-600">Automated purchasing</span>
-              </div>
-            </div>
-          </div>
+          
         </div>
 
         {/* Platform Showcase */}
