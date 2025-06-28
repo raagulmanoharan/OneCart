@@ -25,7 +25,7 @@ export class ProductExtractor {
     'ajio.com'
   ];
 
-  private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36';
+  private static USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36';
 
   static async extractFromUrl(url: string): Promise<ExtractionResult> {
     try {
@@ -40,16 +40,25 @@ export class ProductExtractor {
         };
       }
 
-      // Fetch page content
+      // Fetch page content with better headers
       const response = await fetch(url, {
         headers: {
           'User-Agent': this.USER_AGENT,
-          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-          'Accept-Language': 'en-US,en;q=0.5',
-          'Accept-Encoding': 'gzip, deflate',
+          'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
+          'Accept-Language': 'en-US,en;q=0.9,hi;q=0.8',
+          'Accept-Encoding': 'gzip, deflate, br',
+          'Cache-Control': 'no-cache',
+          'Pragma': 'no-cache',
+          'Sec-Ch-Ua': '"Not_A Brand";v="8", "Chromium";v="120", "Google Chrome";v="120"',
+          'Sec-Ch-Ua-Mobile': '?0',
+          'Sec-Ch-Ua-Platform': '"Windows"',
+          'Sec-Fetch-Dest': 'document',
+          'Sec-Fetch-Mode': 'navigate',
+          'Sec-Fetch-Site': 'none',
+          'Sec-Fetch-User': '?1',
+          'Upgrade-Insecure-Requests': '1',
           'DNT': '1',
           'Connection': 'keep-alive',
-          'Upgrade-Insecure-Requests': '1',
         }
       });
 
@@ -64,22 +73,32 @@ export class ProductExtractor {
       const $ = cheerio.load(html);
 
       // Extract based on domain
+      let result: ExtractionResult;
+      
       if (domain.includes('amazon.in')) {
-        return this.extractFromAmazon($, domain);
+        result = this.extractFromAmazon($, domain);
       } else if (domain.includes('flipkart.com')) {
-        return this.extractFromFlipkart($, domain);
+        result = this.extractFromFlipkart($, domain);
       } else if (domain.includes('myntra.com')) {
-        return this.extractFromMyntra($, domain);
+        result = this.extractFromMyntra($, domain);
       } else if (domain.includes('nykaa.com')) {
-        return this.extractFromNykaa($, domain);
+        result = this.extractFromNykaa($, domain);
       } else if (domain.includes('ajio.com')) {
-        return this.extractFromAjio($, domain);
+        result = this.extractFromAjio($, domain);
+      } else {
+        return {
+          success: false,
+          error: 'No extraction method found for this domain'
+        };
       }
 
-      return {
-        success: false,
-        error: 'No extraction method found for this domain'
-      };
+      // If specific extraction failed, try generic fallback
+      if (!result.success) {
+        console.log(`Specific extraction failed for ${domain}, trying generic fallback`);
+        result = this.extractGeneric($, domain);
+      }
+
+      return result;
 
     } catch (error) {
       return {
@@ -143,25 +162,55 @@ export class ProductExtractor {
 
   private static extractFromFlipkart($: cheerio.CheerioAPI, domain: string): ExtractionResult {
     try {
+      // Updated selectors for Flipkart's current structure
       const title = $('h1 span').text().trim() ||
                    $('.B_NuCI').text().trim() ||
-                   $('._35KyD6').text().trim();
+                   $('._35KyD6').text().trim() ||
+                   $('h1[class*="title"]').text().trim() ||
+                   $('span[class*="title"]').text().trim() ||
+                   $('h1').first().text().trim();
 
       const price = $('._30jeq3._16Jk6d').text().trim() ||
                    $('._30jeq3').text().trim() ||
-                   $('._1_WHN1').text().trim();
+                   $('._1_WHN1').text().trim() ||
+                   $('div[class*="price"] span').first().text().trim() ||
+                   $('span[class*="price"]').first().text().trim();
 
       const imageUrl = $('._396cs4 img').attr('src') ||
                       $('._2r_T1I img').attr('src') ||
-                      $('._3li7GG img').attr('src');
+                      $('._3li7GG img').attr('src') ||
+                      $('img[class*="product"]').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src');
 
       const availability = $('._16FRp0').text().trim() ||
-                          $('._3xgqrA').text().trim();
+                          $('._3xgqrA').text().trim() ||
+                          $('div[class*="stock"]').text().trim();
+
+      // Extract color and size information
+      const color = $('div[class*="color"] span').text().trim() ||
+                   $('.selected-color').text().trim();
+
+      const size = $('div[class*="size"] span').text().trim() ||
+                  $('.selected-size').text().trim();
 
       if (!title || !price) {
+        // Debug information
+        console.log('Flipkart extraction debug:', {
+          titleSelectors: {
+            'h1 span': $('h1 span').length,
+            '.B_NuCI': $('.B_NuCI').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '._30jeq3._16Jk6d': $('._30jeq3._16Jk6d').length,
+            '._30jeq3': $('._30jeq3').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
         return {
           success: false,
-          error: 'Could not extract required product information from Flipkart page'
+          error: 'Could not extract required product information from Flipkart page. The page structure may have changed.'
         };
       }
 
@@ -172,6 +221,8 @@ export class ProductExtractor {
           price: price.replace(/[^\d.,]/g, ''),
           imageUrl,
           storeDomain: domain,
+          color,
+          size,
           availability
         }
       };
@@ -185,19 +236,47 @@ export class ProductExtractor {
 
   private static extractFromMyntra($: cheerio.CheerioAPI, domain: string): ExtractionResult {
     try {
-      const title = $('.pdp-name').text().trim() ||
-                   $('h1.pdp-title').text().trim();
+      // Updated selectors for Myntra's current structure
+      const title = $('h1.pdp-title').text().trim() ||
+                   $('.pdp-name').text().trim() ||
+                   $('h1[class*="title"]').text().trim() ||
+                   $('h1').first().text().trim();
 
       const price = $('.pdp-price strong').text().trim() ||
-                   $('.price-current').text().trim();
+                   $('.price-current').text().trim() ||
+                   $('span[class*="price"]').first().text().trim() ||
+                   $('div[class*="price"] span').first().text().trim();
 
       const imageUrl = $('.image-grid-image').first().attr('src') ||
-                      $('.pdp-img').attr('src');
+                      $('.pdp-img').attr('src') ||
+                      $('img[class*="image"]').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src');
+
+      // More flexible color and size extraction
+      const color = $('span[class*="color"]').text().trim() ||
+                   $('.selected-color').text().trim();
+
+      const size = $('span[class*="size"]').text().trim() ||
+                  $('.selected-size').text().trim();
 
       if (!title || !price) {
+        // Debug information
+        console.log('Myntra extraction debug:', {
+          titleSelectors: {
+            'h1.pdp-title': $('h1.pdp-title').length,
+            '.pdp-name': $('.pdp-name').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '.pdp-price strong': $('.pdp-price strong').length,
+            '.price-current': $('.price-current').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
         return {
           success: false,
-          error: 'Could not extract required product information from Myntra page'
+          error: 'Could not extract required product information from Myntra page. The page structure may have changed.'
         };
       }
 
@@ -207,7 +286,9 @@ export class ProductExtractor {
           title,
           price: price.replace(/[^\d.,]/g, ''),
           imageUrl,
-          storeDomain: domain
+          storeDomain: domain,
+          color,
+          size
         }
       };
     } catch (error) {
@@ -220,19 +301,49 @@ export class ProductExtractor {
 
   private static extractFromNykaa($: cheerio.CheerioAPI, domain: string): ExtractionResult {
     try {
+      // Updated selectors for Nykaa's current structure
       const title = $('h1[data-testid="pdp_product_name"]').text().trim() ||
-                   $('.product-title').text().trim();
+                   $('.product-title').text().trim() ||
+                   $('h1[class*="product"]').text().trim() ||
+                   $('h1[class*="title"]').text().trim() ||
+                   $('h1').first().text().trim();
 
       const price = $('[data-testid="pdp_product_price"]').text().trim() ||
-                   $('.price').text().trim();
+                   $('.price').text().trim() ||
+                   $('span[class*="price"]').first().text().trim() ||
+                   $('div[class*="price"] span').first().text().trim();
 
       const imageUrl = $('[data-testid="pdp_product_image"] img').attr('src') ||
-                      $('.product-image img').attr('src');
+                      $('.product-image img').attr('src') ||
+                      $('img[class*="product"]').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src');
+
+      // Extract color and size information
+      const color = $('span[class*="color"]').text().trim() ||
+                   $('div[class*="shade"]').text().trim() ||
+                   $('.selected-color').text().trim();
+
+      const size = $('span[class*="size"]').text().trim() ||
+                  $('.selected-size').text().trim();
 
       if (!title || !price) {
+        // Debug information
+        console.log('Nykaa extraction debug:', {
+          titleSelectors: {
+            'h1[data-testid="pdp_product_name"]': $('h1[data-testid="pdp_product_name"]').length,
+            '.product-title': $('.product-title').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '[data-testid="pdp_product_price"]': $('[data-testid="pdp_product_price"]').length,
+            '.price': $('.price').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
         return {
           success: false,
-          error: 'Could not extract required product information from Nykaa page'
+          error: 'Could not extract required product information from Nykaa page. The page structure may have changed.'
         };
       }
 
@@ -242,7 +353,9 @@ export class ProductExtractor {
           title,
           price: price.replace(/[^\d.,]/g, ''),
           imageUrl,
-          storeDomain: domain
+          storeDomain: domain,
+          color,
+          size
         }
       };
     } catch (error) {
@@ -255,19 +368,147 @@ export class ProductExtractor {
 
   private static extractFromAjio($: cheerio.CheerioAPI, domain: string): ExtractionResult {
     try {
+      // Updated selectors for Ajio's current structure
       const title = $('h1.pdp-product-name').text().trim() ||
-                   $('.product-name').text().trim();
+                   $('.product-name').text().trim() ||
+                   $('h1[class*="product"]').text().trim() ||
+                   $('h1[class*="title"]').text().trim() ||
+                   $('h1').first().text().trim();
 
       const price = $('.pdp-price .price-value').text().trim() ||
-                   $('.current-price').text().trim();
+                   $('.current-price').text().trim() ||
+                   $('span[class*="price"]').first().text().trim() ||
+                   $('.price').first().text().trim() ||
+                   $('div[class*="price"] span').first().text().trim();
 
       const imageUrl = $('.pdp-image img').attr('src') ||
-                      $('.product-image img').attr('src');
+                      $('.product-image img').attr('src') ||
+                      $('img[class*="product"]').first().attr('src') ||
+                      $('img[alt*="product"]').first().attr('src');
+
+      // Extract color and size information
+      const color = $('span[class*="color"]').text().trim() ||
+                   $('.selected-color').text().trim();
+
+      const size = $('span[class*="size"]').text().trim() ||
+                  $('.selected-size').text().trim();
+
+      if (!title || !price) {
+        // Debug information
+        console.log('Ajio extraction debug:', {
+          titleSelectors: {
+            'h1.pdp-product-name': $('h1.pdp-product-name').length,
+            '.product-name': $('.product-name').length,
+            'h1': $('h1').length
+          },
+          priceSelectors: {
+            '.pdp-price .price-value': $('.pdp-price .price-value').length,
+            '.current-price': $('.current-price').length,
+            'span[class*="price"]': $('span[class*="price"]').length
+          }
+        });
+        
+        return {
+          success: false,
+          error: 'Could not extract required product information from Ajio page. The page structure may have changed.'
+        };
+      }
+
+      return {
+        success: true,
+        product: {
+          title,
+          price: price.replace(/[^\d.,]/g, ''),
+          imageUrl,
+          storeDomain: domain,
+          color,
+          size
+        }
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: `Ajio extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      };
+    }
+  }
+
+  // Generic fallback extraction method
+  private static extractGeneric($: cheerio.CheerioAPI, domain: string): ExtractionResult {
+    try {
+      console.log(`Attempting generic extraction for ${domain}`);
+      
+      // Try various common selectors for title
+      const titleSelectors = [
+        'h1',
+        '[data-testid*="title"]',
+        '[data-testid*="name"]',
+        '.product-title',
+        '.pdp-title',
+        '.product-name',
+        '[class*="title"]',
+        '[class*="name"]',
+        '[class*="product-title"]'
+      ];
+
+      let title = '';
+      for (const selector of titleSelectors) {
+        title = $(selector).first().text().trim();
+        if (title && title.length > 5) break;
+      }
+
+      // Try various common selectors for price
+      const priceSelectors = [
+        '[data-testid*="price"]',
+        '.price',
+        '.product-price',
+        '.current-price',
+        '[class*="price"]',
+        '[class*="current"]',
+        'span[class*="rs"]',
+        'span[class*="rupee"]',
+        'span[class*="₹"]'
+      ];
+
+      let price = '';
+      for (const selector of priceSelectors) {
+        const priceText = $(selector).first().text().trim();
+        if (priceText && /[₹\d,.]/.test(priceText)) {
+          price = priceText;
+          break;
+        }
+      }
+
+      // Try to find product images
+      const imageSelectors = [
+        'img[alt*="product"]',
+        'img[class*="product"]',
+        'img[data-testid*="image"]',
+        '.product-image img',
+        '.pdp-image img',
+        'main img',
+        'img[src*="product"]'
+      ];
+
+      let imageUrl = '';
+      for (const selector of imageSelectors) {
+        const src = $(selector).first().attr('src');
+        if (src && (src.startsWith('http') || src.startsWith('//'))) {
+          imageUrl = src;
+          break;
+        }
+      }
+
+      console.log('Generic extraction results:', {
+        title: title ? 'Found' : 'Not found',
+        price: price ? 'Found' : 'Not found',
+        image: imageUrl ? 'Found' : 'Not found'
+      });
 
       if (!title || !price) {
         return {
           success: false,
-          error: 'Could not extract required product information from Ajio page'
+          error: `Generic extraction failed - Could not find ${!title ? 'title' : ''} ${!title && !price ? 'and' : ''} ${!price ? 'price' : ''} on the page`
         };
       }
 
@@ -283,7 +524,7 @@ export class ProductExtractor {
     } catch (error) {
       return {
         success: false,
-        error: `Ajio extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
+        error: `Generic extraction error: ${error instanceof Error ? error.message : 'Unknown error'}`
       };
     }
   }
