@@ -7,7 +7,7 @@ import CartSummary from "@/components/CartSummary";
 
 export default function Home() {
   const { toast } = useToast();
-  const { isAuthenticated, isLoading } = useAuth();
+  const { isAuthenticated, isLoading, logoutMutation } = useAuth();
 
   // Redirect to home if not authenticated
   useEffect(() => {
@@ -44,7 +44,7 @@ export default function Home() {
             <div className="flex items-center space-x-4">
               <button 
                 className="text-gray-500 hover:text-gray-700 px-4 py-2 rounded-xl font-medium transition-all duration-200 hover:bg-gray-50"
-                onClick={() => window.location.href = '/api/logout'}
+                onClick={() => logoutMutation.mutate()}
               >
                 Sign Out
               </button>

@@ -5,6 +5,8 @@ import {
   ruleProducts,
   type User,
   type UpsertUser,
+  type InsertUser,
+  type RegisterData,
   type Product,
   type InsertProduct,
   type Rule,
@@ -16,23 +18,25 @@ import { db } from "./db";
 import { eq, and } from "drizzle-orm";
 
 export interface IStorage {
-  // User operations (mandatory for Replit Auth)
-  getUser(id: string): Promise<User | undefined>;
+  // User operations
+  getUser(id: number): Promise<User | undefined>;
+  getUserByEmail(email: string): Promise<User | undefined>;
+  createUser(user: RegisterData): Promise<User>;
   upsertUser(user: UpsertUser): Promise<User>;
   
   // Product operations
-  getUserProducts(userId: string): Promise<Product[]>;
+  getUserProducts(userId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
   updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product>;
-  deleteProduct(id: number, userId: string): Promise<void>;
-  getProduct(id: number, userId: string): Promise<Product | undefined>;
+  deleteProduct(id: number, userId: number): Promise<void>;
+  getProduct(id: number, userId: number): Promise<Product | undefined>;
   
   // Rule operations
-  getUserRules(userId: string): Promise<Rule[]>;
+  getUserRules(userId: number): Promise<Rule[]>;
   createRule(rule: InsertRule): Promise<Rule>;
   updateRule(id: number, updates: Partial<InsertRule>): Promise<Rule>;
-  deleteRule(id: number, userId: string): Promise<void>;
-  getRule(id: number, userId: string): Promise<Rule | undefined>;
+  deleteRule(id: number, userId: number): Promise<void>;
+  getRule(id: number, userId: number): Promise<Rule | undefined>;
   
   // Rule-Product operations
   getRuleProducts(ruleId: number): Promise<RuleProduct[]>;
@@ -42,8 +46,21 @@ export interface IStorage {
 
 export class DatabaseStorage implements IStorage {
   // User operations
-  async getUser(id: string): Promise<User | undefined> {
+  async getUser(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user;
+  }
+
+  async getUserByEmail(email: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.email, email));
+    return user;
+  }
+
+  async createUser(userData: RegisterData): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(userData)
+      .returning();
     return user;
   }
 
@@ -63,7 +80,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Product operations
-  async getUserProducts(userId: string): Promise<Product[]> {
+  async getUserProducts(userId: number): Promise<Product[]> {
     return await db
       .select()
       .from(products)
@@ -88,13 +105,13 @@ export class DatabaseStorage implements IStorage {
     return updatedProduct;
   }
 
-  async deleteProduct(id: number, userId: string): Promise<void> {
+  async deleteProduct(id: number, userId: number): Promise<void> {
     await db
       .delete(products)
       .where(and(eq(products.id, id), eq(products.userId, userId)));
   }
 
-  async getProduct(id: number, userId: string): Promise<Product | undefined> {
+  async getProduct(id: number, userId: number): Promise<Product | undefined> {
     const [product] = await db
       .select()
       .from(products)
@@ -103,7 +120,7 @@ export class DatabaseStorage implements IStorage {
   }
 
   // Rule operations
-  async getUserRules(userId: string): Promise<Rule[]> {
+  async getUserRules(userId: number): Promise<Rule[]> {
     return await db
       .select()
       .from(rules)
@@ -128,7 +145,7 @@ export class DatabaseStorage implements IStorage {
     return updatedRule;
   }
 
-  async deleteRule(id: number, userId: string): Promise<void> {
+  async deleteRule(id: number, userId: number): Promise<void> {
     // First delete all rule-product mappings
     await db
       .delete(ruleProducts)
@@ -140,7 +157,7 @@ export class DatabaseStorage implements IStorage {
       .where(and(eq(rules.id, id), eq(rules.userId, userId)));
   }
 
-  async getRule(id: number, userId: string): Promise<Rule | undefined> {
+  async getRule(id: number, userId: number): Promise<Rule | undefined> {
     const [rule] = await db
       .select()
       .from(rules)

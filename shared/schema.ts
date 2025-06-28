@@ -25,10 +25,11 @@ export const sessions = pgTable(
   (table) => [index("IDX_session_expire").on(table.expire)],
 );
 
-// User storage table for Replit Auth
+// User storage table
 export const users = pgTable("users", {
-  id: varchar("id").primaryKey().notNull(),
-  email: varchar("email").unique(),
+  id: serial("id").primaryKey(),
+  email: varchar("email").notNull().unique(),
+  password: varchar("password").notNull(),
   firstName: varchar("first_name"),
   lastName: varchar("last_name"),
   profileImageUrl: varchar("profile_image_url"),
@@ -39,7 +40,7 @@ export const users = pgTable("users", {
 // Products table
 export const products = pgTable("products", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   title: text("title").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
   originalUrl: text("original_url").notNull(),
@@ -57,7 +58,7 @@ export const products = pgTable("products", {
 // Rules table
 export const rules = pgTable("rules", {
   id: serial("id").primaryKey(),
-  userId: varchar("user_id").notNull().references(() => users.id),
+  userId: integer("user_id").notNull().references(() => users.id),
   name: varchar("name").notNull(),
   trigger: varchar("trigger").notNull(), // price_drop, availability, fast_shipping, specific_date, low_stock
   conditionType: varchar("condition_type"), // price_below, price_drop_percentage, delivery_days, stock_level
@@ -125,9 +126,30 @@ export const insertRuleProductSchema = createInsertSchema(ruleProducts).omit({
   id: true,
 });
 
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const loginSchema = z.object({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(1, "Password is required"),
+});
+
+export const registerSchema = insertUserSchema.extend({
+  email: z.string().email("Please enter a valid email address"),
+  password: z.string().min(6, "Password must be at least 6 characters"),
+  firstName: z.string().min(1, "First name is required"),
+  lastName: z.string().min(1, "Last name is required"),
+});
+
 // Types
 export type UpsertUser = typeof users.$inferInsert;
 export type User = typeof users.$inferSelect;
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type LoginData = z.infer<typeof loginSchema>;
+export type RegisterData = z.infer<typeof registerSchema>;
 export type Product = typeof products.$inferSelect;
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Rule = typeof rules.$inferSelect;

@@ -1,26 +1,16 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { setupAuth, isAuthenticated } from "./replitAuth";
+import { setupAuth, isAuthenticated } from "./auth";
 import { ProductExtractor } from "./services/productExtractor";
-import { insertProductSchema, insertRuleSchema, insertRuleProductSchema } from "@shared/schema";
+import { insertProductSchema, insertRuleSchema, insertRuleProductSchema, registerSchema, loginSchema } from "@shared/schema";
 import { z } from "zod";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   // Auth middleware
-  await setupAuth(app);
+  setupAuth(app);
 
-  // Auth routes
-  app.get('/api/auth/user', isAuthenticated, async (req: any, res) => {
-    try {
-      const userId = req.user.claims.sub;
-      const user = await storage.getUser(userId);
-      res.json(user);
-    } catch (error) {
-      console.error("Error fetching user:", error);
-      res.status(500).json({ message: "Failed to fetch user" });
-    }
-  });
+  // Auth routes are now handled in auth.ts
 
   // Product extraction endpoint
   app.post('/api/products/extract', isAuthenticated, async (req: any, res) => {
@@ -47,7 +37,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Products CRUD endpoints
   app.get('/api/products', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const products = await storage.getUserProducts(userId);
       res.json(products);
     } catch (error) {
@@ -58,7 +48,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/products', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const productData = { ...req.body, userId };
       
       const validatedData = insertProductSchema.parse(productData);
@@ -76,7 +66,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const productId = parseInt(req.params.id);
       
       if (isNaN(productId)) {
@@ -104,7 +94,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/products/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const productId = parseInt(req.params.id);
       
       if (isNaN(productId)) {
@@ -122,7 +112,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rules CRUD endpoints
   app.get('/api/rules', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const rules = await storage.getUserRules(userId);
       res.json(rules);
     } catch (error) {
@@ -133,7 +123,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/rules', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const { productIds, ...ruleData } = req.body;
       
       const ruleDataWithUser = { ...ruleData, userId };
@@ -162,7 +152,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.put('/api/rules/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const ruleId = parseInt(req.params.id);
       
       if (isNaN(ruleId)) {
@@ -190,7 +180,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/rules/:id', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const ruleId = parseInt(req.params.id);
       
       if (isNaN(ruleId)) {
@@ -208,7 +198,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Rule-Product management endpoints
   app.get('/api/rules/:id/products', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const ruleId = parseInt(req.params.id);
       
       if (isNaN(ruleId)) {
@@ -231,7 +221,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.post('/api/rules/:id/products', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const ruleId = parseInt(req.params.id);
       const { productId } = req.body;
       
@@ -267,7 +257,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   app.delete('/api/rules/:id/products/:productId', isAuthenticated, async (req: any, res) => {
     try {
-      const userId = req.user.claims.sub;
+      const userId = req.user.id;
       const ruleId = parseInt(req.params.id);
       const productId = parseInt(req.params.productId);
       
