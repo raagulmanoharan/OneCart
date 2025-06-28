@@ -162,7 +162,7 @@ export default function ProductUrlInput() {
   return (
     <Card className="mb-8 modern-card animate-in">
       <CardContent className="p-8">
-        <h2 className="text-2xl font-semibold text-gray-900 mb-6 tracking-tight">Add Product to Cart</h2>
+        <h2 className="text-lg font-semibold text-gray-900 mb-6 tracking-tight">Add Product to Cart</h2>
         
         <div className="space-y-4">
           <div>
@@ -176,13 +176,13 @@ export default function ProductUrlInput() {
                 placeholder="Paste product URL from Amazon US/India, eBay, Flipkart, Myntra, Nykaa, Ajio..."
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                className="flex-1 modern-input h-12 text-base px-4 rounded-xl border-gray-200/80 focus:border-primary/30 transition-all duration-200"
+                className="flex-1 modern-input h-11 text-sm px-4 rounded-lg border-gray-200/80 focus:border-primary/30 transition-all duration-200"
                 disabled={extractMutation.isPending}
               />
               <Button 
                 onClick={handleExtract}
                 disabled={extractMutation.isPending || !url.trim()}
-                className="h-12 px-8 rounded-xl font-medium bg-gray-900 hover:bg-gray-800 transition-all duration-200"
+                className="h-11 px-6 rounded-lg font-medium bg-gray-900 hover:bg-gray-800 transition-all duration-200"
               >
                 {extractMutation.isPending ? (
                   <Loader2 className="h-4 w-4 animate-spin" />

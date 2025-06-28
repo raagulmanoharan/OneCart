@@ -189,7 +189,7 @@ export default function CartDisplay() {
       <Card className="modern-card animate-in">
         <div className="p-8 border-b border-gray-100/50">
           <div className="flex justify-between items-center">
-            <h2 className="text-2xl font-semibold text-gray-900 tracking-tight">Your Cart</h2>
+            <h2 className="text-lg font-semibold text-gray-900 tracking-tight">Your Cart</h2>
             <span className="text-sm text-gray-500 font-medium">
               {products.length} {products.length === 1 ? 'item' : 'items'}
             </span>
