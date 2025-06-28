@@ -97,20 +97,7 @@ export default function Landing() {
 
         {/* Features Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-24 w-full max-w-6xl" id="features">
-          <div className="bg-white/40 backdrop-blur-xl rounded-3xl p-12 border border-white/20 shadow-lg">
-            <Globe className="h-8 w-8 text-slate-700 mb-6" />
-            <h3 className="text-2xl font-medium text-slate-900 mb-4">Multi-Platform Integration</h3>
-            <p className="text-slate-600 leading-relaxed mb-6">
-              Extract and manage products from Amazon India, Flipkart, Myntra, Nykaa, Ajio, and more. 
-              Real-time price tracking and availability monitoring.
-            </p>
-            <div className="flex flex-wrap gap-2">
-              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">Amazon</span>
-              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">Flipkart</span>
-              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">Myntra</span>
-              <span className="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-medium rounded-full">Nykaa</span>
-            </div>
-          </div>
+          
           
           <div className="bg-white/40 backdrop-blur-xl rounded-3xl p-12 border border-white/20 shadow-lg">
             <Zap className="h-8 w-8 text-slate-700 mb-6" />
