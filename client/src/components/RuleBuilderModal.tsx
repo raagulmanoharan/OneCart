@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useState, useEffect } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
   Dialog,
   DialogContent,
@@ -18,19 +18,21 @@ import {
 } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, InfoIcon } from "lucide-react";
+import { Loader2, InfoIcon, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
 import { isUnauthorizedError } from "@/lib/authUtils";
-import type { Product } from "@shared/schema";
+import type { Product, Rule } from "@shared/schema";
 
 interface RuleBuilderModalProps {
   isOpen: boolean;
   onClose: () => void;
   products: Product[];
+  editingRule?: Rule | null;
+  onEditRule?: (rule: Rule) => void;
 }
 
-export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuilderModalProps) {
+export default function RuleBuilderModal({ isOpen, onClose, products, editingRule, onEditRule }: RuleBuilderModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     trigger: "",
@@ -43,20 +45,71 @@ export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuil
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const createRuleMutation = useMutation({
+  // Get existing rules for the editing interface
+  const { data: allRules = [] } = useQuery<Rule[]>({
+    queryKey: ["/api/rules"],
+    retry: false,
+    enabled: isOpen && !editingRule, // Only fetch when modal is open and not editing a specific rule
+  });
+
+  // Get rule products if editing
+  const { data: ruleProducts = [] } = useQuery<any[]>({
+    queryKey: ["/api/rules", editingRule?.id, "products"],
+    retry: false,
+    enabled: !!editingRule?.id,
+  });
+
+  // Reset form when modal opens/closes or when editingRule changes
+  useEffect(() => {
+    if (editingRule) {
+      // Populate form with existing rule data
+      setFormData({
+        name: editingRule.name,
+        trigger: editingRule.trigger,
+        conditionType: editingRule.conditionType || "",
+        conditionValue: editingRule.conditionValue || "",
+        action: editingRule.action || "",
+        selectedProducts: ruleProducts.map((rp: any) => rp.productId) || [],
+      });
+    } else {
+      // Reset form for new rule
+      setFormData({
+        name: "",
+        trigger: "",
+        conditionType: "",
+        conditionValue: "",
+        action: "",
+        selectedProducts: [],
+      });
+    }
+  }, [editingRule, ruleProducts, isOpen]);
+
+  const saveRuleMutation = useMutation({
     mutationFn: async (ruleData: any) => {
       const { selectedProducts, ...rule } = ruleData;
-      const response = await apiRequest("POST", "/api/rules", {
-        ...rule,
-        productIds: selectedProducts,
-      });
+      
+      let response;
+      if (editingRule) {
+        // Update existing rule
+        response = await apiRequest("PUT", `/api/rules/${editingRule.id}`, {
+          ...rule,
+          productIds: selectedProducts,
+        });
+      } else {
+        // Create new rule
+        response = await apiRequest("POST", "/api/rules", {
+          ...rule,
+          productIds: selectedProducts,
+        });
+      }
       return await response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["/api/rules"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/rules", editingRule?.id, "products"] });
       toast({
-        title: "Rule created",
-        description: "Your automation rule has been set up successfully",
+        title: editingRule ? "Rule updated" : "Rule created",
+        description: editingRule ? "Your rule has been updated successfully" : "Your automation rule has been set up successfully",
       });
       handleClose();
     },
@@ -73,12 +126,51 @@ export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuil
         return;
       }
       toast({
-        title: "Failed to create rule",
-        description: error.message || "Could not create automation rule",
+        title: editingRule ? "Failed to update rule" : "Failed to create rule",
+        description: error.message || "Could not save automation rule",
         variant: "destructive",
       });
     },
   });
+
+  const deleteRuleMutation = useMutation({
+    mutationFn: async (ruleId: number) => {
+      const response = await apiRequest("DELETE", `/api/rules/${ruleId}`);
+      return await response.json();
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/rules"] });
+      toast({
+        title: "Rule deleted",
+        description: "Your automation rule has been removed",
+      });
+      handleClose();
+    },
+    onError: (error) => {
+      if (isUnauthorizedError(error)) {
+        toast({
+          title: "Unauthorized",
+          description: "You are logged out. Logging in again...",
+          variant: "destructive",
+        });
+        setTimeout(() => {
+          window.location.href = "/api/login";
+        }, 500);
+        return;
+      }
+      toast({
+        title: "Failed to delete rule",
+        description: error.message || "Could not remove automation rule",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleDelete = () => {
+    if (editingRule && confirm("Are you sure you want to delete this rule?")) {
+      deleteRuleMutation.mutate(editingRule.id);
+    }
+  };
 
   const handleClose = () => {
     setFormData({
@@ -113,7 +205,7 @@ export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuil
       return;
     }
 
-    createRuleMutation.mutate(formData);
+    saveRuleMutation.mutate(formData);
   };
 
   const handleProductSelection = (productId: number, checked: boolean) => {
@@ -151,8 +243,48 @@ export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuil
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Create Rule</DialogTitle>
+          <DialogTitle>{editingRule ? "Edit Rule" : "Create Rule"}</DialogTitle>
         </DialogHeader>
+
+        {!editingRule && allRules.length > 0 ? (
+          // Show existing rules for selection
+          <div className="space-y-4">
+            <div className="text-sm text-gray-600">
+              Select a rule to edit, or scroll down to create a new one:
+            </div>
+            <div className="space-y-2 max-h-48 overflow-y-auto">
+              {allRules.map((rule) => (
+                <div key={rule.id} className="p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer"
+                     onClick={() => window.location.reload()} // Will be updated to edit specific rule
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <h4 className="font-medium text-gray-900">{rule.name}</h4>
+                      <p className="text-sm text-gray-600">
+                        {rule.trigger.replace('_', ' ')} → {rule.action?.replace('_', ' ')}
+                      </p>
+                    </div>
+                    <Button 
+                      variant="outline" 
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (onEditRule) {
+                          onEditRule(rule);
+                        }
+                      }}
+                    >
+                      Edit
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="border-t pt-4">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Or Create New Rule</h3>
+            </div>
+          </div>
+        ) : null}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Rule Name */}
@@ -271,19 +403,38 @@ export default function RuleBuilderModal({ isOpen, onClose, products }: RuleBuil
           </div>
 
           {/* Form Actions */}
-          <div className="flex justify-end space-x-3 pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleClose}>
-              Cancel
-            </Button>
-            <Button 
-              type="submit" 
-              disabled={createRuleMutation.isPending || products.length === 0}
-            >
-              {createRuleMutation.isPending ? (
-                <Loader2 className="h-4 w-4 animate-spin mr-2" />
-              ) : null}
-              Create Rule
-            </Button>
+          <div className="flex justify-between items-center pt-4 border-t">
+            <div>
+              {editingRule && (
+                <Button 
+                  type="button" 
+                  variant="destructive"
+                  onClick={handleDelete}
+                  disabled={deleteRuleMutation.isPending}
+                >
+                  {deleteRuleMutation.isPending ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <Trash2 className="h-4 w-4 mr-2" />
+                  )}
+                  Delete Rule
+                </Button>
+              )}
+            </div>
+            <div className="flex space-x-3">
+              <Button type="button" variant="outline" onClick={handleClose}>
+                Cancel
+              </Button>
+              <Button 
+                type="submit" 
+                disabled={saveRuleMutation.isPending || products.length === 0}
+              >
+                {saveRuleMutation.isPending ? (
+                  <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                ) : null}
+                {editingRule ? "Update Rule" : "Create Rule"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

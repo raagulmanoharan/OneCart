@@ -14,6 +14,7 @@ import type { Product, Rule } from "@shared/schema";
 
 export default function CartDisplay() {
   const [isRuleModalOpen, setIsRuleModalOpen] = useState(false);
+  const [editingRule, setEditingRule] = useState<Rule | null>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -294,8 +295,16 @@ export default function CartDisplay() {
 
       <RuleBuilderModal 
         isOpen={isRuleModalOpen}
-        onClose={() => setIsRuleModalOpen(false)}
+        onClose={() => {
+          setIsRuleModalOpen(false);
+          setEditingRule(null);
+        }}
         products={products}
+        editingRule={editingRule}
+        onEditRule={(rule) => {
+          setEditingRule(rule);
+          // Modal is already open, just switch to edit mode
+        }}
       />
     </>
   );
