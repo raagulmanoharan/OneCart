@@ -13,7 +13,7 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@neondatabase/serverless": "^0.9.0",
+    "@neondatabase/serverless": "^0.11.0",
     "bcryptjs": "^2.4.3",
     "connect-pg-simple": "^9.0.1",
     "dotenv": "^16.4.5",
@@ -31,6 +31,7 @@
     "@types/node": "^20.0.0",
     "@types/passport": "^1.0.16",
     "@types/passport-local": "^1.0.38",
+    "@vitejs/plugin-react": "^4.0.0",
     "drizzle-kit": "^0.20.0",
     "tsx": "^4.0.0",
     "typescript": "^5.0.0"
