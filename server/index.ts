@@ -11,7 +11,6 @@ import express from 'express';
 import { createServer } from 'http';
 import { setupVite, serveStatic } from './vite.js';
 import { setupAuth } from './auth.js';
-import { db } from './db.js';
 import { apiRoutes } from './routes.js';
 
 const app = express();
@@ -39,14 +38,5 @@ const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log(`Environment: ${process.env.NODE_ENV}`);
-  
-  // Test database connection
-  if (process.env.DATABASE_URL) {
-    console.log('✅ DATABASE_URL is configured');
-  } else {
-    console.log('❌ DATABASE_URL is not configured!');
-    console.log('Please add DATABASE_URL to your .env file.');
-    console.log('Format: postgresql://username:password@host/database?sslmode=require');
-    console.log('You can get this from your Neon dashboard at https://neon.tech');
-  }
+  console.log('✅ Using in-memory storage - no database required');
 });

@@ -1,29 +1,14 @@
-import {
-  users,
-  products,
-  rules,
-  ruleProducts,
-  type User,
-  type UpsertUser,
-  type InsertUser,
-  type RegisterData,
-  type Product,
-  type InsertProduct,
-  type Rule,
-  type InsertRule,
-  type RuleProduct,
-  type InsertRuleProduct,
-} from "@shared/schema";
-import { db } from "./db";
-import { eq, and } from "drizzle-orm";
+import { User, Product, Rule, RuleProduct, InsertProduct, InsertRule, InsertRuleProduct } from "@shared/schema";
+
+// Simple in-memory storage
+const products: Map<number, Product> = new Map();
+const rules: Map<number, Rule> = new Map();
+const ruleProducts: Map<number, RuleProduct> = new Map();
+let nextProductId = 1;
+let nextRuleId = 1;
+let nextRuleProductId = 1;
 
 export interface IStorage {
-  // User operations
-  getUser(id: number): Promise<User | undefined>;
-  getUserByEmail(email: string): Promise<User | undefined>;
-  createUser(user: RegisterData): Promise<User>;
-  upsertUser(user: UpsertUser): Promise<User>;
-  
   // Product operations
   getUserProducts(userId: number): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
@@ -44,159 +29,129 @@ export interface IStorage {
   removeProductFromRule(ruleId: number, productId: number): Promise<void>;
 }
 
-export class DatabaseStorage implements IStorage {
-  // User operations
-  async getUser(id: number): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.id, id));
-    return user;
-  }
-
-  async getUserByEmail(email: string): Promise<User | undefined> {
-    const [user] = await db.select().from(users).where(eq(users.email, email));
-    return user;
-  }
-
-  async createUser(userData: RegisterData): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .returning();
-    return user;
-  }
-
-  async upsertUser(userData: UpsertUser): Promise<User> {
-    const [user] = await db
-      .insert(users)
-      .values(userData)
-      .onConflictDoUpdate({
-        target: users.id,
-        set: {
-          ...userData,
-          updatedAt: new Date(),
-        },
-      })
-      .returning();
-    return user;
-  }
-
+export class MemoryStorage implements IStorage {
   // Product operations
   async getUserProducts(userId: number): Promise<Product[]> {
-    return await db
-      .select()
-      .from(products)
-      .where(eq(products.userId, userId))
-      .orderBy(products.createdAt);
+    return Array.from(products.values()).filter(p => p.userId === userId);
   }
 
-  async createProduct(product: InsertProduct): Promise<Product> {
-    const [newProduct] = await db
-      .insert(products)
-      .values(product)
-      .returning();
-    return newProduct;
+  async createProduct(productData: InsertProduct): Promise<Product> {
+    const product: Product = {
+      id: nextProductId++,
+      ...productData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    products.set(product.id, product);
+    return product;
   }
 
   async updateProduct(id: number, updates: Partial<InsertProduct>): Promise<Product> {
-    const [updatedProduct] = await db
-      .update(products)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(products.id, id))
-      .returning();
+    const product = products.get(id);
+    if (!product) throw new Error('Product not found');
+    
+    const updatedProduct = {
+      ...product,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    products.set(id, updatedProduct);
     return updatedProduct;
   }
 
   async deleteProduct(id: number, userId: number): Promise<void> {
-    // First remove the product from any rules
-    await db
-      .delete(ruleProducts)
-      .where(eq(ruleProducts.productId, id));
+    const product = products.get(id);
+    if (!product || product.userId !== userId) {
+      throw new Error('Product not found');
+    }
     
-    // Then delete the product
-    await db
-      .delete(products)
-      .where(and(eq(products.id, id), eq(products.userId, userId)));
+    // Remove from any rules
+    for (const [rpId, rp] of ruleProducts.entries()) {
+      if (rp.productId === id) {
+        ruleProducts.delete(rpId);
+      }
+    }
+    
+    products.delete(id);
   }
 
   async getProduct(id: number, userId: number): Promise<Product | undefined> {
-    const [product] = await db
-      .select()
-      .from(products)
-      .where(and(eq(products.id, id), eq(products.userId, userId)));
-    return product;
+    const product = products.get(id);
+    return product && product.userId === userId ? product : undefined;
   }
 
   // Rule operations
   async getUserRules(userId: number): Promise<Rule[]> {
-    return await db
-      .select()
-      .from(rules)
-      .where(eq(rules.userId, userId))
-      .orderBy(rules.createdAt);
+    return Array.from(rules.values()).filter(r => r.userId === userId);
   }
 
-  async createRule(rule: InsertRule): Promise<Rule> {
-    const [newRule] = await db
-      .insert(rules)
-      .values(rule)
-      .returning();
-    return newRule;
+  async createRule(ruleData: InsertRule): Promise<Rule> {
+    const rule: Rule = {
+      id: nextRuleId++,
+      ...ruleData,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    };
+    rules.set(rule.id, rule);
+    return rule;
   }
 
   async updateRule(id: number, updates: Partial<InsertRule>): Promise<Rule> {
-    const [updatedRule] = await db
-      .update(rules)
-      .set({ ...updates, updatedAt: new Date() })
-      .where(eq(rules.id, id))
-      .returning();
+    const rule = rules.get(id);
+    if (!rule) throw new Error('Rule not found');
+    
+    const updatedRule = {
+      ...rule,
+      ...updates,
+      updatedAt: new Date(),
+    };
+    rules.set(id, updatedRule);
     return updatedRule;
   }
 
   async deleteRule(id: number, userId: number): Promise<void> {
-    // First delete all rule-product mappings
-    await db
-      .delete(ruleProducts)
-      .where(eq(ruleProducts.ruleId, id));
+    const rule = rules.get(id);
+    if (!rule || rule.userId !== userId) {
+      throw new Error('Rule not found');
+    }
     
-    // Then delete the rule
-    await db
-      .delete(rules)
-      .where(and(eq(rules.id, id), eq(rules.userId, userId)));
+    // Remove all rule-product mappings
+    for (const [rpId, rp] of ruleProducts.entries()) {
+      if (rp.ruleId === id) {
+        ruleProducts.delete(rpId);
+      }
+    }
+    
+    rules.delete(id);
   }
 
   async getRule(id: number, userId: number): Promise<Rule | undefined> {
-    const [rule] = await db
-      .select()
-      .from(rules)
-      .where(and(eq(rules.id, id), eq(rules.userId, userId)));
-    return rule;
+    const rule = rules.get(id);
+    return rule && rule.userId === userId ? rule : undefined;
   }
 
   // Rule-Product operations
   async getRuleProducts(ruleId: number): Promise<RuleProduct[]> {
-    return await db
-      .select()
-      .from(ruleProducts)
-      .where(eq(ruleProducts.ruleId, ruleId));
+    return Array.from(ruleProducts.values()).filter(rp => rp.ruleId === ruleId);
   }
 
-  async addProductToRule(ruleProduct: InsertRuleProduct): Promise<RuleProduct> {
-    const [newRuleProduct] = await db
-      .insert(ruleProducts)
-      .values(ruleProduct)
-      .returning();
-    return newRuleProduct;
+  async addProductToRule(ruleProductData: InsertRuleProduct): Promise<RuleProduct> {
+    const ruleProduct: RuleProduct = {
+      id: nextRuleProductId++,
+      ...ruleProductData,
+    };
+    ruleProducts.set(ruleProduct.id, ruleProduct);
+    return ruleProduct;
   }
 
   async removeProductFromRule(ruleId: number, productId: number): Promise<void> {
-    await db
-      .delete(ruleProducts)
-      .where(
-        and(
-          eq(ruleProducts.ruleId, ruleId),
-          eq(ruleProducts.productId, productId)
-        )
-      );
+    for (const [rpId, rp] of ruleProducts.entries()) {
+      if (rp.ruleId === ruleId && rp.productId === productId) {
+        ruleProducts.delete(rpId);
+        break;
+      }
+    }
   }
 }
 
-export const storage = new DatabaseStorage();
+export const storage = new MemoryStorage();

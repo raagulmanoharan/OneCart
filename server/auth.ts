@@ -4,9 +4,7 @@ import { Express } from "express";
 import session from "express-session";
 import { scrypt, randomBytes, timingSafeEqual } from "crypto";
 import { promisify } from "util";
-import { storage } from "./storage";
 import { User, RegisterData, LoginData } from "@shared/schema";
-import connectPg from "connect-pg-simple";
 
 declare global {
   namespace Express {
@@ -20,6 +18,11 @@ declare global {
 }
 
 const scryptAsync = promisify(scrypt);
+
+// Simple in-memory user store
+const users: Map<number, User> = new Map();
+const usersByEmail: Map<string, User> = new Map();
+let nextUserId = 1;
 
 async function hashPassword(password: string): Promise<string> {
   const salt = randomBytes(16).toString("hex");
@@ -35,17 +38,10 @@ async function comparePasswords(supplied: string, stored: string): Promise<boole
 }
 
 export function setupAuth(app: Express) {
-  const PostgresSessionStore = connectPg(session);
-  
   const sessionSettings: session.SessionOptions = {
     secret: process.env.SESSION_SECRET || "dev-secret-key",
     resave: false,
     saveUninitialized: false,
-    store: new PostgresSessionStore({ 
-      conString: process.env.DATABASE_URL,
-      createTableIfMissing: true,
-      tableName: 'sessions'
-    }),
     cookie: {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -63,7 +59,7 @@ export function setupAuth(app: Express) {
       { usernameField: "email" },
       async (email, password, done) => {
         try {
-          const user = await storage.getUserByEmail(email);
+          const user = usersByEmail.get(email);
           if (!user || !(await comparePasswords(password, user.password))) {
             return done(null, false);
           }
@@ -78,8 +74,8 @@ export function setupAuth(app: Express) {
   passport.serializeUser((user, done) => done(null, user.id));
   passport.deserializeUser(async (id: number, done) => {
     try {
-      const user = await storage.getUser(id);
-      done(null, user);
+      const user = users.get(id);
+      done(null, user || null);
     } catch (error) {
       done(error);
     }
@@ -89,18 +85,24 @@ export function setupAuth(app: Express) {
     try {
       const { email, password, firstName, lastName } = req.body;
       
-      const existingUser = await storage.getUserByEmail(email);
-      if (existingUser) {
+      if (usersByEmail.has(email)) {
         return res.status(400).json({ error: "Email already exists" });
       }
 
       const hashedPassword = await hashPassword(password);
-      const user = await storage.createUser({
+      const user: User = {
+        id: nextUserId++,
         email,
         password: hashedPassword,
         firstName,
         lastName,
-      });
+        profileImageUrl: null,
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      users.set(user.id, user);
+      usersByEmail.set(email, user);
 
       req.login(user, (err) => {
         if (err) throw err;
