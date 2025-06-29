@@ -84,8 +84,8 @@ git add .
 # Make initial commit
 git commit -m "Initial commit: OneCart shopping cart application"
 
-# Add remote repository (replace with your repo URL)
-git remote add origin https://github.com/yourusername/onecart.git
+# Add remote repository
+git remote add origin https://github.com/raagulmanoharan/OneCart.git
 
 # Push to remote
 git push -u origin main

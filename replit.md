@@ -112,6 +112,10 @@ OneCart is a universal shopping cart application that aggregates products from m
 - June 28, 2025: Modernized UI with Inter font, minimal design, glass-morphism effects, and smooth animations
 - June 28, 2025: Implemented complete email-based authentication system replacing Replit Auth
 - June 28, 2025: Redesigned landing page with modern Swiss-style design, glassmorphism effects, and refined typography
+- June 29, 2025: Fixed database connection and session management issues
+- June 29, 2025: Resolved routing conflicts causing 404 pages after login
+- June 29, 2025: Enhanced Git setup with comprehensive .gitignore and README documentation
+- June 29, 2025: Connected project to GitHub repository: https://github.com/raagulmanoharan/OneCart
 
 ## User Preferences
 
