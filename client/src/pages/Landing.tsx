@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { ShoppingCart, Package, Sparkles, ArrowRight, Globe, Zap } from "lucide-react";
-import { SiAmazon, SiEbay } from "react-icons/si";
-import { FlipkartLogo, MyntraLogo, NykaaLogo, AjioLogo, MeeshoLogo, SnapdealLogo } from "@/components/PlatformLogos";
+import { ShoppingCart, Plus, Package, Settings, Home, ShoppingBag } from "lucide-react";
 
 export default function Landing() {
   const handleLogin = () => {
@@ -9,186 +7,216 @@ export default function Landing() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-30">
-        <div className="absolute inset-0 bg-gradient-to-br from-slate-100/20 to-slate-200/20"></div>
-        <div 
-          className="absolute inset-0" 
-          style={{
-            backgroundImage: 'radial-gradient(circle at 1px 1px, rgb(148 163 184 / 0.15) 1px, transparent 0)',
-            backgroundSize: '20px 20px'
-          }}
-        ></div>
-      </div>
-      
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="relative z-10 flex items-center justify-between p-6 max-w-7xl mx-auto">
-        <div className="flex items-center space-x-3">
-          <div className="w-8 h-8 bg-gradient-to-br from-slate-900 to-slate-700 rounded-lg flex items-center justify-center">
-            <ShoppingCart className="h-4 w-4 text-white" />
-          </div>
-          <span className="text-xl font-medium text-slate-900 tracking-tight">OneCart</span>
+      <header className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        <div className="flex items-center space-x-2">
+          <ShoppingCart className="h-6 w-6 text-black" />
+          <span className="text-xl font-semibold text-black">OneCart</span>
         </div>
         
-        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-slate-600">
-          <a href="#features" className="hover:text-slate-900 transition-colors">Features</a>
-          <a href="#platforms" className="hover:text-slate-900 transition-colors">Platforms</a>
-          <a href="#automation" className="hover:text-slate-900 transition-colors">Automation</a>
+        <nav className="hidden md:flex items-center space-x-8 text-sm font-medium text-gray-700">
+          <a href="#how-it-works" className="hover:text-black transition-colors">How it Works</a>
+          <a href="#features" className="hover:text-black transition-colors">Features</a>
+          <a href="#pricing" className="hover:text-black transition-colors">Pricing</a>
         </nav>
+
+        <Button 
+          onClick={handleLogin}
+          variant="outline"
+          className="border-gray-300 text-gray-700 hover:bg-gray-50 px-6"
+        >
+          Login
+        </Button>
       </header>
 
-      {/* Main Content */}
-      <main className="relative z-10 flex flex-col items-center justify-center px-6 py-20 max-w-7xl mx-auto">
-        {/* Hero Section */}
-        <div className="text-center space-y-8 max-w-4xl">
-          <div className="space-y-6">
-            <h1 className="text-6xl md:text-7xl font-light text-slate-900 tracking-tight leading-none">
-              UNIFIED
-              <br />
-              <span className="font-medium">SHOPPING</span>
-            </h1>
-            
-            <div className="w-24 h-px bg-slate-300 mx-auto"></div>
-            
-            <p className="text-xl text-slate-600 font-light max-w-2xl mx-auto leading-relaxed">
-              Aggregate products from multiple e-commerce platforms 
-              <br />
-              into a single, intelligent shopping cart
-            </p>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-8">
-            <Button 
-              onClick={handleLogin}
-              className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-8 py-3 text-base rounded-xl transition-all duration-200 flex items-center gap-2 group"
-            >
-              Start Shopping
-              <ArrowRight className="h-4 w-4 group-hover:translate-x-1 transition-transform" />
-            </Button>
-            
-            <Button 
-              variant="ghost"
-              className="text-slate-600 hover:text-slate-900 font-medium px-8 py-3 text-base"
-            >
-              Learn More
-            </Button>
-          </div>
-        </div>
-
-        {/* Stats Section */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-24 w-full max-w-4xl">
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-lg">
-            <div className="text-3xl font-light text-slate-900 mb-2">5+</div>
-            <div className="text-sm font-medium text-slate-600 uppercase tracking-wide">Platforms</div>
-            <p className="text-sm text-slate-500 mt-2">Supported e-commerce sites</p>
-          </div>
-          
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-lg">
-            <div className="text-3xl font-light text-slate-900 mb-2">∞</div>
-            <div className="text-sm font-medium text-slate-600 uppercase tracking-wide">Products</div>
-            <p className="text-sm text-slate-500 mt-2">Unlimited cart capacity</p>
-          </div>
-          
-          <div className="bg-white/60 backdrop-blur-xl rounded-2xl p-8 border border-white/20 shadow-lg">
-            <div className="text-3xl font-light text-slate-900 mb-2">24/7</div>
-            <div className="text-sm font-medium text-slate-600 uppercase tracking-wide">Automation</div>
-            <p className="text-sm text-slate-500 mt-2">Smart purchasing rules</p>
-          </div>
-        </div>
-
-        {/* Features Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mt-24 w-full max-w-6xl" id="features">
-          
-          
-          
-        </div>
-
-        {/* Platform Showcase */}
-        <div className="mt-24 w-full max-w-6xl" id="platforms">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-light text-slate-900 mb-4">Supported Platforms</h2>
-            <div className="w-16 h-px bg-slate-300 mx-auto"></div>
-          </div>
-          
-          <div className="bg-white/30 backdrop-blur-xl rounded-3xl p-12 border border-white/20 shadow-lg">
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-8 items-center">
-              <div className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <SiAmazon className="h-8 w-8 text-orange-500" />
-                </div>
-                <div className="text-lg font-medium text-slate-700">Amazon</div>
-                <div className="text-xs text-slate-500 mt-1">India & US</div>
-              </div>
-              <div className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <FlipkartLogo className="h-10 w-10" />
-                </div>
-                <div className="text-lg font-medium text-slate-700">Flipkart</div>
-                <div className="text-xs text-slate-500 mt-1">India</div>
-              </div>
-              <div className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <MyntraLogo className="h-10 w-10" />
-                </div>
-                <div className="text-lg font-medium text-slate-700">Myntra</div>
-                <div className="text-xs text-slate-500 mt-1">Fashion</div>
-              </div>
-              <div className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <NykaaLogo className="h-10 w-10" />
-                </div>
-                <div className="text-lg font-medium text-slate-700">Nykaa</div>
-                <div className="text-xs text-slate-500 mt-1">Beauty</div>
-              </div>
-              <div className="text-center group">
-                <div className="w-16 h-16 mx-auto mb-4 bg-white/50 rounded-2xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                  <AjioLogo className="h-10 w-10" />
-                </div>
-                <div className="text-lg font-medium text-slate-700">Ajio</div>
-                <div className="text-xs text-slate-500 mt-1">Lifestyle</div>
-              </div>
+      {/* Hero Section */}
+      <main className="max-w-7xl mx-auto px-6 py-16">
+        <div className="grid lg:grid-cols-2 gap-16 items-center">
+          {/* Left Content */}
+          <div className="space-y-8">
+            <div className="space-y-6">
+              <h1 className="text-5xl lg:text-6xl font-bold text-black leading-tight">
+                Shop from everywhere.
+                <br />
+                Buy in one place.
+              </h1>
+              
+              <p className="text-xl text-gray-600 leading-relaxed max-w-lg">
+                A seamless cart that works across all your favorite online stores. Add products, track deals, and set smart purchase rules.
+              </p>
             </div>
-            
-            <div className="mt-8 pt-8 border-t border-slate-200/30">
-              <div className="text-center text-sm text-slate-500 mb-4">Additional Platforms</div>
-              <div className="flex justify-center items-center gap-6">
-                <div className="text-center group">
-                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                    <SiEbay className="h-6 w-6 text-blue-600" />
+
+            <div className="flex flex-col sm:flex-row gap-4">
+              <Button 
+                onClick={handleLogin}
+                className="bg-black hover:bg-gray-800 text-white px-8 py-3 text-base font-medium"
+              >
+                Get Started
+              </Button>
+              <Button 
+                variant="outline"
+                className="border-gray-300 text-gray-700 hover:bg-gray-50 px-8 py-3 text-base font-medium"
+              >
+                Watch Demo
+              </Button>
+            </div>
+          </div>
+
+          {/* Right Illustration */}
+          <div className="relative">
+            <div className="bg-gray-50 rounded-2xl p-8 relative overflow-hidden">
+              {/* Store Logos */}
+              <div className="absolute top-4 right-4 space-y-2">
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <div className="w-8 h-6 bg-orange-500 rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">a</span>
                   </div>
-                  <div className="text-sm font-medium text-slate-600">eBay</div>
                 </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                    <MeeshoLogo className="h-8 w-8" />
+                <div className="bg-white rounded-lg p-2 shadow-sm">
+                  <div className="w-8 h-6 bg-black rounded flex items-center justify-center">
+                    <span className="text-white text-xs font-bold">ZARA</span>
                   </div>
-                  <div className="text-sm font-medium text-slate-600">Meesho</div>
                 </div>
-                <div className="text-center group">
-                  <div className="w-12 h-12 mx-auto mb-2 bg-white/50 rounded-xl flex items-center justify-center group-hover:bg-white/70 transition-all duration-200">
-                    <SnapdealLogo className="h-8 w-8" />
+              </div>
+
+              {/* Product Items */}
+              <div className="space-y-4 mb-8">
+                <div className="bg-blue-100 rounded-lg p-3 w-16 h-12 flex items-center justify-center">
+                  <div className="w-8 h-6 bg-blue-400 rounded"></div>
+                </div>
+                <div className="bg-blue-100 rounded-lg p-3 w-20 h-16 flex items-center justify-center">
+                  <Package className="h-6 w-6 text-blue-600" />
+                </div>
+              </div>
+
+              {/* Person Illustration */}
+              <div className="flex justify-center">
+                <div className="relative">
+                  <div className="w-32 h-32 bg-orange-400 rounded-full flex items-center justify-center">
+                    <div className="w-24 h-24 bg-orange-500 rounded-full flex items-center justify-center">
+                      <div className="w-16 h-16 bg-orange-600 rounded-full"></div>
+                    </div>
                   </div>
-                  <div className="text-sm font-medium text-slate-600">Snapdeal</div>
+                  {/* Laptop */}
+                  <div className="absolute -bottom-4 left-1/2 transform -translate-x-1/2">
+                    <div className="w-24 h-16 bg-gray-800 rounded-lg flex items-center justify-center">
+                      <div className="w-20 h-12 bg-gray-700 rounded"></div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
         </div>
+
+        {/* How it Works Section */}
+        <section id="how-it-works" className="mt-32">
+          <div className="grid md:grid-cols-3 gap-12">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Plus className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">Add Products</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Browse any online store and add items directly to OneCart.
+              </p>
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <ShoppingCart className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">Organize Your Cart</h3>
+              <p className="text-gray-600 leading-relaxed">
+                See all your saved items from different stores in one place
+              </p>
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Settings className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">Buy or Automate</h3>
+              <p className="text-gray-600 leading-relaxed">
+                Checkout instantly or set rules like "buy when price drops"
+              </p>
+            </div>
+          </div>
+        </section>
+
+        {/* Automation Section */}
+        <section className="mt-32">
+          <div className="grid lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-6">
+              <h2 className="text-4xl font-bold text-black">
+                Let OneCart shop for you.
+              </h2>
+              <p className="text-xl text-gray-600 leading-relaxed">
+                Build custom rules to automate purchases based on price, shipping, or stock.
+              </p>
+            </div>
+
+            <div className="bg-gray-50 rounded-2xl p-8">
+              <div className="space-y-4">
+                <div className="text-sm text-gray-600">
+                  If this product drops below 21,999
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-gray-400">→</span>
+                  <span className="text-gray-900">notify me</span>
+                </div>
+                <Button 
+                  variant="outline" 
+                  className="w-full border-gray-300 text-gray-700 hover:bg-gray-100"
+                >
+                  Set a Rule
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Use Cases Section */}
+        <section className="mt-32 text-center">
+          <h2 className="text-4xl font-bold text-black mb-4">
+            Let OneCart shop for you.
+          </h2>
+          <p className="text-xl text-gray-600 mb-16 max-w-2xl mx-auto">
+            Build custom rules to automate purchases based on price, shipping, or stock.
+          </p>
+
+          <div className="grid md:grid-cols-2 gap-12 max-w-4xl mx-auto">
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <ShoppingBag className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">Holiday Shopping</h3>
+            </div>
+
+            <div className="text-center space-y-4">
+              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto">
+                <Home className="h-8 w-8 text-gray-600" />
+              </div>
+              <h3 className="text-xl font-semibold text-black">Furnishing a New Home</h3>
+            </div>
+          </div>
+        </section>
 
         {/* CTA Section */}
-        <div className="mt-24 text-center">
-          <p className="text-sm font-medium text-slate-500 uppercase tracking-wide mb-4">
-            Ready to simplify your shopping?
-          </p>
-          <Button 
-            onClick={handleLogin}
-            size="lg"
-            className="bg-slate-900 hover:bg-slate-800 text-white font-medium px-12 py-4 text-lg rounded-xl transition-all duration-200"
-          >
-            Get Started Free
-          </Button>
-        </div>
+        <section className="mt-32 text-center">
+          <div className="bg-gray-50 rounded-3xl p-16">
+            <h2 className="text-3xl font-bold text-black mb-6">
+              Ready to simplify your shopping?
+            </h2>
+            <Button 
+              onClick={handleLogin}
+              className="bg-black hover:bg-gray-800 text-white px-12 py-4 text-lg font-medium"
+            >
+              Get Started Free
+            </Button>
+          </div>
+        </section>
       </main>
     </div>
   );
