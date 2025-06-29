@@ -2,7 +2,6 @@ import passport from "passport";
 import { Strategy as LocalStrategy } from "passport-local";
 import { Express } from "express";
 import session from "express-session";
-import bcrypt from "bcrypt";
 import { User, RegisterData, LoginData } from "@shared/schema";
 
 declare global {
@@ -21,13 +20,15 @@ const users: Map<number, User> = new Map();
 const usersByEmail: Map<string, User> = new Map();
 let nextUserId = 1;
 
+// Simple password hashing (for development only)
 async function hashPassword(password: string): Promise<string> {
-  const saltRounds = 10;
-  return await bcrypt.hash(password, saltRounds);
+  // Simple hash for development - in production use proper bcrypt
+  return Buffer.from(password).toString('base64');
 }
 
 async function comparePasswords(supplied: string, stored: string): Promise<boolean> {
-  return await bcrypt.compare(supplied, stored);
+  const hashedSupplied = Buffer.from(supplied).toString('base64');
+  return hashedSupplied === stored;
 }
 
 export function setupAuth(app: Express) {
