@@ -1,0 +1,521 @@
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneCart - Universal Shopping Cart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        'inter': ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366F1',
+                        secondary: '#8B5CF6',
+                        success: '#10B981',
+                        warning: '#F59E0B',
+                        error: '#EF4444',
+                    }
+                }
+            }
+        };
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-inter">
+    <!-- @COMPONENT: Navigation Header -->
+    <nav class="bg-white shadow-sm border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <div class="flex-shrink-0">
+                        <h1 class="text-2xl font-bold text-primary">OneCart</h1>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span class="text-sm text-gray-600" data-bind="user.cartCount">3 items in cart</span>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg hover:bg-indigo-700 transition-colors" data-event="click:openAuth">
+                        <i class="fas fa-user mr-2"></i>Sign In
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    <!-- @END_COMPONENT: Navigation Header -->
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- @COMPONENT: Add Product Section -->
+            <div class="lg:col-span-2">
+                <div class="bg-white rounded-xl shadow-sm p-6 mb-8">
+                    <h2 class="text-xl font-semibold text-gray-900 mb-4">Add Product to Cart</h2>
+                    
+                    <div class="space-y-4">
+                        <div>
+                            <label for="productUrl" class="block text-sm font-medium text-gray-700 mb-2">
+                                Product URL
+                            </label>
+                            <div class="relative">
+                                <input 
+                                    type="url" 
+                                    id="productUrl" 
+                                    placeholder="Paste product URL from Amazon, Flipkart, Myntra, Nykaa, or Ajio..."
+                                    class="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary transition-colors"
+                                    data-event="input:validateUrl"
+                                >
+                                <button 
+                                    class="absolute right-3 top-3 bg-primary text-white px-4 py-1 rounded-md text-sm hover:bg-indigo-700 transition-colors"
+                                    data-event="click:extractProduct"
+                                    data-implementation="Extract metadata from URL using server-side scraping"
+                                >
+                                    Add
+                                </button>
+                            </div>
+                            <p class="text-xs text-gray-500 mt-1">
+                                Supported sites: Amazon India, Flipkart, Myntra, Nykaa, Ajio
+                            </p>
+                        </div>
+
+                        <!-- URL Processing State -->
+                        <div id="urlProcessingState" class="hidden">
+                            <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <div class="animate-spin rounded-full h-4 w-4 border-b-2 border-primary mr-3"></div>
+                                    <span class="text-sm text-blue-800">Extracting product information...</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Error State -->
+                        <div id="urlErrorState" class="hidden">
+                            <div class="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <div class="flex items-center">
+                                    <i class="fas fa-exclamation-triangle text-red-500 mr-3"></i>
+                                    <span class="text-sm text-red-800">Unable to extract product information. Please check the URL and try again.</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- @COMPONENT: Cart Items Display -->
+                <div class="bg-white rounded-xl shadow-sm">
+                    <div class="p-6 border-b border-gray-200">
+                        <div class="flex justify-between items-center">
+                            <h2 class="text-xl font-semibold text-gray-900">Your Cart</h2>
+                            <span class="text-sm text-gray-500" data-bind="cart.totalItems">3 items</span>
+                        </div>
+                    </div>
+
+                    <!-- @FUNCTIONALITY: Group products by store domain as specified in PRD -->
+                    
+                    <!-- Amazon India Group -->
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center mb-4">
+                            <div class="w-8 h-8 bg-orange-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fab fa-amazon text-orange-600"></i>
+                            </div>
+                            <h3 class="font-medium text-gray-900">Amazon India</h3>
+                            <span class="ml-auto text-sm text-gray-500">2 items</span>
+                        </div>
+
+                        <!-- @MAP: amazonProducts.map(product => ( -->
+                        <div class="space-y-4">
+                            <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg">
+                                <!-- Real product image from URL extraction -->
+                                <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                    <img src="#" alt="Product image" class="w-full h-full object-cover" data-bind="product.imageUrl" data-implementation="Display extracted product image">
+                                </div>
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="text-sm font-medium text-gray-900 line-clamp-2" data-bind="product.title">
+                                        Product title will be extracted from URL
+                                    </h4>
+                                    <p class="text-sm text-gray-500 mt-1" data-bind="product.price">
+                                        ₹Price extracted from page
+                                    </p>
+                                    <div class="flex items-center space-x-4 mt-2">
+                                        <div class="flex items-center space-x-2">
+                                            <label class="text-xs text-gray-500">Qty:</label>
+                                            <input 
+                                                type="number" 
+                                                min="1" 
+                                                value="1" 
+                                                class="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
+                                                data-bind="product.quantity"
+                                                data-event="change:updateQuantity"
+                                            >
+                                        </div>
+                                        <button class="text-xs text-red-600 hover:text-red-800" data-event="click:removeProduct">
+                                            <i class="fas fa-trash mr-1"></i>Remove
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="text-right">
+                                    <p class="text-sm font-medium text-gray-900" data-bind="product.totalPrice">₹Total</p>
+                                    <span class="inline-block w-2 h-2 bg-green-400 rounded-full mt-1" title="In Stock"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- @END_MAP )) -->
+                    </div>
+
+                    <!-- Flipkart Group -->
+                    <div class="p-6 border-b border-gray-100">
+                        <div class="flex items-center mb-4">
+                            <div class="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                                <i class="fas fa-shopping-cart text-blue-600"></i>
+                            </div>
+                            <h3 class="font-medium text-gray-900">Flipkart</h3>
+                            <span class="ml-auto text-sm text-gray-500">1 item</span>
+                        </div>
+
+                        <div class="flex items-start space-x-4 p-4 border border-gray-200 rounded-lg">
+                            <div class="w-20 h-20 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                                <img src="#" alt="Product image" class="w-full h-full object-cover" data-bind="product.imageUrl">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <h4 class="text-sm font-medium text-gray-900 line-clamp-2" data-bind="product.title">
+                                    Product title from Flipkart
+                                </h4>
+                                <p class="text-sm text-gray-500 mt-1" data-bind="product.price">₹Price</p>
+                                <div class="flex items-center space-x-4 mt-2">
+                                    <div class="flex items-center space-x-2">
+                                        <label class="text-xs text-gray-500">Qty:</label>
+                                        <input 
+                                            type="number" 
+                                            min="1" 
+                                            value="1" 
+                                            class="w-16 px-2 py-1 text-sm border border-gray-300 rounded"
+                                            data-bind="product.quantity"
+                                        >
+                                    </div>
+                                    <button class="text-xs text-red-600 hover:text-red-800">
+                                        <i class="fas fa-trash mr-1"></i>Remove
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="text-right">
+                                <p class="text-sm font-medium text-gray-900" data-bind="product.totalPrice">₹Total</p>
+                                <span class="inline-block w-2 h-2 bg-yellow-400 rounded-full mt-1" title="Low Stock"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cart Actions -->
+                    <div class="p-6">
+                        <div class="flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                            <button 
+                                class="flex-1 bg-primary text-white py-3 px-6 rounded-lg font-medium hover:bg-indigo-700 transition-colors"
+                                data-event="click:buyNow"
+                                data-implementation="Open checkout instructions or redirect to original URLs"
+                            >
+                                <i class="fas fa-shopping-cart mr-2"></i>
+                                Buy Now
+                            </button>
+                            <button 
+                                class="flex-1 bg-gray-100 text-gray-700 py-3 px-6 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                                data-event="click:openRuleBuilder"
+                            >
+                                <i class="fas fa-robot mr-2"></i>
+                                Set Up Rules
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- @END_COMPONENT: Cart Items Display -->
+            </div>
+
+            <!-- @COMPONENT: Cart Summary Sidebar -->
+            <div class="lg:col-span-1">
+                <div class="bg-white rounded-xl shadow-sm p-6 sticky top-8">
+                    <h3 class="text-lg font-semibold text-gray-900 mb-4">Cart Summary</h3>
+                    
+                    <div class="space-y-3">
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Subtotal</span>
+                            <span class="text-gray-900" data-bind="cart.subtotal">₹0</span>
+                        </div>
+                        <div class="flex justify-between text-sm">
+                            <span class="text-gray-600">Estimated Shipping</span>
+                            <span class="text-gray-900">Varies by store</span>
+                        </div>
+                        <div class="border-t border-gray-200 pt-3">
+                            <div class="flex justify-between">
+                                <span class="text-base font-medium text-gray-900">Estimated Total</span>
+                                <span class="text-base font-medium text-gray-900" data-bind="cart.total">₹0</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active Rules Display -->
+                    <div class="mt-6 pt-6 border-t border-gray-200">
+                        <h4 class="text-sm font-medium text-gray-900 mb-3">Active Rules</h4>
+                        <!-- @STATE: activeRules:array = [] -->
+                        <div id="activeRulesList" class="space-y-2">
+                            <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                                <div class="flex items-center">
+                                    <i class="fas fa-bolt text-green-600 mr-2 text-sm"></i>
+                                    <span class="text-sm text-green-800">Price drop alert active</span>
+                                </div>
+                            </div>
+                            <div class="text-center py-4" id="noRulesMessage">
+                                <p class="text-sm text-gray-500">No rules set up yet</p>
+                                <button 
+                                    class="text-primary text-sm font-medium mt-1 hover:text-indigo-700"
+                                    data-event="click:openRuleBuilder"
+                                >
+                                    Create your first rule
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <!-- @END_COMPONENT: Cart Summary Sidebar -->
+        </div>
+    </div>
+
+    <!-- @COMPONENT: Rule Builder Modal -->
+    <div id="ruleBuilderModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-6 border-b border-gray-200">
+                    <div class="flex justify-between items-center">
+                        <h3 class="text-xl font-semibold text-gray-900">Create Rule</h3>
+                        <button class="text-gray-400 hover:text-gray-600" data-event="click:closeRuleBuilder">
+                            <i class="fas fa-times text-xl"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="p-6 space-y-6">
+                    <!-- Rule Name -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-2">Rule Name</label>
+                        <input 
+                            type="text" 
+                            placeholder="e.g., Buy when price drops"
+                            class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                            data-bind="rule.name"
+                        >
+                    </div>
+
+                    <!-- Trigger Section -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">When...</label>
+                        <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" data-bind="rule.trigger">
+                            <option value="">Select trigger</option>
+                            <option value="price_drop">Price drops</option>
+                            <option value="availability">Item comes in stock</option>
+                            <option value="fast_shipping">Fast shipping available</option>
+                            <option value="specific_date">Specific date arrives</option>
+                            <option value="low_stock">Item is low in stock</option>
+                        </select>
+                    </div>
+
+                    <!-- Condition Section -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">If...</label>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <select class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" data-bind="rule.conditionType">
+                                <option value="">Select condition</option>
+                                <option value="price_below">Price is below</option>
+                                <option value="price_drop_percentage">Price drops by %</option>
+                                <option value="delivery_days">Delivery within days</option>
+                                <option value="stock_level">Stock level</option>
+                            </select>
+                            <input 
+                                type="text" 
+                                placeholder="Value"
+                                class="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                                data-bind="rule.conditionValue"
+                            >
+                        </div>
+                    </div>
+
+                    <!-- Action Section -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Then...</label>
+                        <select class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary" data-bind="rule.action">
+                            <option value="">Select action</option>
+                            <option value="notify">Send notification</option>
+                            <option value="highlight">Highlight in cart</option>
+                            <option value="email">Send email alert</option>
+                            <option value="mark_urgent">Mark as urgent</option>
+                        </select>
+                        <p class="text-xs text-gray-500 mt-1">
+                            Note: Automatic purchasing will be available in future versions
+                        </p>
+                    </div>
+
+                    <!-- Apply to Products -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-3">Apply to Products</label>
+                        <div class="space-y-2 max-h-32 overflow-y-auto border border-gray-200 rounded-lg p-3">
+                            <!-- @MAP: cartProducts.map(product => ( -->
+                            <label class="flex items-center">
+                                <input type="checkbox" class="rounded border-gray-300 text-primary focus:ring-primary" data-bind="rule.products">
+                                <span class="ml-2 text-sm text-gray-700" data-bind="product.title">Product Name</span>
+                            </label>
+                            <!-- @END_MAP )) -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="p-6 border-t border-gray-200 flex justify-end space-x-3">
+                    <button 
+                        class="px-4 py-2 text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+                        data-event="click:closeRuleBuilder"
+                    >
+                        Cancel
+                    </button>
+                    <button 
+                        class="px-4 py-2 bg-primary text-white rounded-lg hover:bg-indigo-700 transition-colors"
+                        data-event="click:saveRule"
+                        data-implementation="Save rule configuration and set up monitoring"
+                    >
+                        Create Rule
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Rule Builder Modal -->
+
+    <!-- @COMPONENT: Authentication Modal -->
+    <div id="authModal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden">
+        <div class="flex items-center justify-center min-h-screen p-4">
+            <div class="bg-white rounded-xl shadow-xl max-w-md w-full">
+                <div class="p-6">
+                    <div class="text-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900">Sign In to OneCart</h3>
+                        <p class="text-sm text-gray-600 mt-2">Save your cart and access it from anywhere</p>
+                    </div>
+
+                    <form class="space-y-4" data-event="submit:handleAuth">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                            <input 
+                                type="email" 
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                                data-bind="auth.email"
+                            >
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                            <input 
+                                type="password" 
+                                required
+                                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary"
+                                data-bind="auth.password"
+                            >
+                        </div>
+                        <button 
+                            type="submit" 
+                            class="w-full bg-primary text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors"
+                        >
+                            Sign In
+                        </button>
+                    </form>
+
+                    <div class="mt-4 text-center">
+                        <button class="text-sm text-primary hover:text-indigo-700">
+                            Don't have an account? Sign up
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- @END_COMPONENT: Authentication Modal -->
+
+    <script>
+        // TODO: Implement real product URL extraction and metadata parsing
+        // TODO: Implement cart persistence with LocalStorage and server sync
+        // TODO: Implement rule engine for automation triggers
+        // TODO: Implement user authentication and session management
+        
+        (function() {
+            // URL validation for supported e-commerce sites
+            const supportedDomains = [
+                'amazon.in',
+                'flipkart.com', 
+                'myntra.com',
+                'nykaa.com',
+                'ajio.com'
+            ];
+
+            // Modal management
+            const modals = {
+                ruleBuilder: document.getElementById('ruleBuilderModal'),
+                auth: document.getElementById('authModal')
+            };
+
+            // Event handlers for UI interactions
+            document.addEventListener('click', function(e) {
+                const target = e.target.closest('[data-event]');
+                if (!target) return;
+
+                const eventType = target.getAttribute('data-event');
+                
+                switch(eventType) {
+                    case 'click:openRuleBuilder':
+                        modals.ruleBuilder.classList.remove('hidden');
+                        break;
+                    case 'click:closeRuleBuilder':
+                        modals.ruleBuilder.classList.add('hidden');
+                        break;
+                    case 'click:openAuth':
+                        modals.auth.classList.remove('hidden');
+                        break;
+                    case 'click:extractProduct':
+                        extractProductFromUrl();
+                        break;
+                }
+            });
+
+            // URL extraction simulation (to be replaced with real implementation)
+            function extractProductFromUrl() {
+                const urlInput = document.getElementById('productUrl');
+                const url = urlInput.value.trim();
+                
+                if (!url) return;
+
+                // Show loading state
+                document.getElementById('urlProcessingState').classList.remove('hidden');
+                
+                // TODO: Replace with actual server-side metadata extraction
+                setTimeout(() => {
+                    document.getElementById('urlProcessingState').classList.add('hidden');
+                    // TODO: Add extracted product to cart
+                    urlInput.value = '';
+                }, 2000);
+            }
+
+            // Cart data persistence using LocalStorage
+            function saveCartToLocalStorage(cartData) {
+                localStorage.setItem('onecart_data', JSON.stringify(cartData));
+            }
+
+            function loadCartFromLocalStorage() {
+                const saved = localStorage.getItem('onecart_data');
+                return saved ? JSON.parse(saved) : { products: [], rules: [] };
+            }
+
+            // Initialize application
+            function init() {
+                const cartData = loadCartFromLocalStorage();
+                // TODO: Render cart data and bind to UI elements
+                console.log('OneCart initialized with data:', cartData);
+            }
+
+            init();
+        })();
+    </script>
+</body>
+</html>
